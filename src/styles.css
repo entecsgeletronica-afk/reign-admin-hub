@@ -1,0 +1,397 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-gold: var(--gold);
+  --color-gold-foreground: var(--gold-foreground);
+  --color-gold-soft: var(--gold-soft);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-attention: var(--attention);
+  --color-attention-foreground: var(--attention-foreground);
+}
+
+/* Force dark theme by default for the admin SaaS look */
+:root {
+  --radius: 1rem;
+
+  /* Dark navy base */
+  --background: oklch(0.16 0.02 260);
+  --foreground: oklch(0.98 0.005 260);
+
+  --card: oklch(0.21 0.025 260);
+  --card-foreground: oklch(0.98 0.005 260);
+
+  --popover: oklch(0.21 0.025 260);
+  --popover-foreground: oklch(0.98 0.005 260);
+
+  --surface: oklch(0.21 0.025 260);
+  --surface-elevated: oklch(0.245 0.028 260);
+
+  /* Gold primary */
+  --primary: oklch(0.82 0.14 80);
+  --primary-foreground: oklch(0.18 0.03 260);
+
+  --gold: oklch(0.82 0.14 80);
+  --gold-foreground: oklch(0.18 0.03 260);
+  --gold-soft: oklch(0.82 0.14 80 / 0.15);
+
+  --secondary: oklch(0.27 0.03 260);
+  --secondary-foreground: oklch(0.98 0.005 260);
+
+  --muted: oklch(0.25 0.025 260);
+  --muted-foreground: oklch(0.7 0.025 260);
+
+  --accent: oklch(0.27 0.03 260);
+  --accent-foreground: oklch(0.98 0.005 260);
+
+  --destructive: oklch(0.65 0.22 25);
+  --destructive-foreground: oklch(0.98 0.005 260);
+
+  --success: oklch(0.7 0.16 150);
+  --success-foreground: oklch(0.18 0.03 260);
+
+  --attention: oklch(0.66 0.22 25);
+  --attention-foreground: oklch(0.98 0.005 260);
+
+  --border: oklch(1 0 0 / 0.08);
+  --input: oklch(1 0 0 / 0.1);
+  --ring: oklch(0.82 0.14 80 / 0.5);
+
+  --chart-1: oklch(0.82 0.14 80);
+  --chart-2: oklch(0.7 0.18 35);
+  --chart-3: oklch(0.65 0.15 200);
+  --chart-4: oklch(0.7 0.18 320);
+  --chart-5: oklch(0.75 0.15 145);
+
+  --sidebar: oklch(0.18 0.02 260);
+  --sidebar-foreground: oklch(0.85 0.015 260);
+  --sidebar-primary: oklch(0.82 0.14 80);
+  --sidebar-primary-foreground: oklch(0.18 0.03 260);
+  --sidebar-accent: oklch(0.245 0.028 260);
+  --sidebar-accent-foreground: oklch(0.98 0.005 260);
+  --sidebar-border: oklch(1 0 0 / 0.06);
+  --sidebar-ring: oklch(0.82 0.14 80 / 0.5);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html,
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+
+  body {
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
+  }
+}
+
+@layer utilities {
+  .bg-radial-gold {
+    background-image:
+      radial-gradient(
+        ellipse 80% 60% at 20% 0%,
+        color-mix(in oklab, var(--gold) 10%, transparent) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        ellipse 60% 50% at 100% 100%,
+        color-mix(in oklab, var(--gold) 6%, transparent) 0%,
+        transparent 60%
+      );
+  }
+  .text-gold {
+    color: var(--gold);
+  }
+  .bg-gold {
+    background-color: var(--gold);
+  }
+  .bg-gold-soft {
+    background-color: var(--gold-soft);
+  }
+  .border-gold {
+    border-color: var(--gold);
+  }
+  .ring-gold {
+    --tw-ring-color: var(--gold);
+  }
+
+  /* Global scrollbar — padronizada com o tema do dashboard.
+     Track usa o background, thumb usa o gold (mesma cor do botão).
+     No iOS Safari, scrollbars são overlay nativo (cinza/branco) e ignoram
+     ::-webkit-scrollbar a menos que forcemos appearance: none. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--gold) 70%, transparent)
+      var(--background);
+  }
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--background);
+  }
+  *::-webkit-scrollbar-track {
+    background: var(--background);
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--gold) 75%, transparent);
+    border-radius: 999px;
+    border: 2px solid var(--background);
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  *::-webkit-scrollbar-thumb:hover,
+  *::-webkit-scrollbar-thumb:active {
+    background: var(--gold);
+  }
+  *::-webkit-scrollbar-corner {
+    background: var(--background);
+  }
+
+  /* iOS Safari overlay scrollbar override — desabilita o overlay branco/cinza
+     padrão para que nossos estilos prevaleçam em containers roláveis. */
+  html,
+  body {
+    -webkit-overflow-scrolling: auto;
+  }
+
+  /* Premium dark scrollbar — slim, gold-tinted thumb on dark track.
+     Declarado APÓS a global para garantir precedência no cascade
+     (mesma especificidade — vence quem vem depois). */
+  .scrollbar-premium {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--gold) 55%, transparent)
+      transparent;
+  }
+  .scrollbar-premium::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+    background: transparent;
+  }
+  .scrollbar-premium::-webkit-scrollbar-track {
+    background: color-mix(in oklab, var(--background) 92%, black);
+    border-radius: 999px;
+    margin: 4px;
+    border: 0;
+  }
+  .scrollbar-premium::-webkit-scrollbar-thumb {
+    background: linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--gold) 70%, transparent),
+      color-mix(in oklab, var(--gold) 35%, transparent)
+    );
+    border-radius: 999px;
+    border: 1px solid color-mix(in oklab, black 30%, transparent);
+    box-shadow:
+      inset 0 0 0 1px color-mix(in oklab, var(--gold) 25%, transparent),
+      0 0 6px color-mix(in oklab, var(--gold) 30%, transparent);
+  }
+  .scrollbar-premium::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--gold) 90%, transparent),
+      color-mix(in oklab, var(--gold) 55%, transparent)
+    );
+  }
+  .scrollbar-premium::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}
+
+/* ─── Press feedback system ───────────────────────────────────────────────
+   Reusable visual "press" effects shared by GlobalClickFx and any
+   component that wants consistent feedback. Two variants:
+
+     • .press-pulse  — scale + brightness flash. Default everywhere
+                       because it works on any size, any color, and any
+                       layout (no extra DOM needed).
+     • .press-ripple — Material-style expanding circle from the press
+                       point. Needs the element to be `position: relative;
+                       overflow: hidden;` and to expose two CSS variables
+                       set by JS at click time:
+                          --press-x: left of the circle (px or %)
+                          --press-y: top of the circle (px or %)
+
+   Activation:
+     • data-click-fx="1"           → triggers the variant indicated by
+                                     data-press-fx (default "pulse")
+     • data-press-fx="pulse"|"ripple"  → opt into a specific variant
+     • Statically applying .press-pulse / .press-ripple as a class also
+       runs the animation (useful for hover/focus combos)
+
+   Accessibility:
+     • prefers-reduced-motion forces all variants to no-op. GlobalClickFx
+       already short-circuits sound + flash before applying the
+       attribute, but we keep the CSS guard so static usages of the
+       classes also respect the user preference.
+*/
+@layer utilities {
+  @keyframes press-pulse {
+    0%   { transform: scale(1);    filter: brightness(1); }
+    35%  { transform: scale(0.96); filter: brightness(1.15); }
+    100% { transform: scale(1);    filter: brightness(1); }
+  }
+
+  @keyframes press-ripple {
+    0%   { transform: scale(0);   opacity: 0.45; }
+    80%  { opacity: 0.15; }
+    100% { transform: scale(2.4); opacity: 0; }
+  }
+
+  .press-pulse,
+  [data-click-fx="1"]:not([data-press-fx="ripple"]) {
+    animation: press-pulse 220ms ease-out;
+    transform-origin: center;
+    will-change: transform, filter;
+  }
+
+  /* Ripple variant — uses an ::after pseudo-element so the host
+     keeps its own background/border untouched. The host MUST be
+     position:relative and overflow:hidden for the circle to clip. */
+  .press-ripple,
+  [data-click-fx="1"][data-press-fx="ripple"] {
+    position: relative;
+    overflow: hidden;
+  }
+  .press-ripple::after,
+  [data-click-fx="1"][data-press-fx="ripple"]::after {
+    content: "";
+    position: absolute;
+    left: var(--press-x, 50%);
+    top:  var(--press-y, 50%);
+    width: 120%;
+    height: 120%;
+    transform: translate(-50%, -50%) scale(0);
+    border-radius: 9999px;
+    background: color-mix(in oklab, currentColor 35%, transparent);
+    pointer-events: none;
+    animation: press-ripple 420ms ease-out;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .press-pulse,
+    .press-ripple,
+    [data-click-fx="1"] {
+      animation: none !important;
+    }
+    .press-ripple::after,
+    [data-click-fx="1"][data-press-fx="ripple"]::after {
+      animation: none !important;
+      content: none;
+    }
+  }
+
+  /* Global number input spinner — themed to match dark UI.
+     Removes the default white browser spinner and replaces with
+     a subtle, theme-aware control. */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+    background-image:
+      linear-gradient(45deg, transparent 50%, hsl(var(--muted-foreground) / 0.7) 50%),
+      linear-gradient(135deg, hsl(var(--muted-foreground) / 0.7) 50%, transparent 50%);
+    background-position:
+      calc(100% - 14px) calc(50% - 4px),
+      calc(100% - 9px) calc(50% - 4px);
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    padding-right: 1.75rem;
+  }
+  input[type="number"]:hover,
+  input[type="number"]:focus {
+    background-image:
+      linear-gradient(45deg, transparent 50%, hsl(var(--gold)) 50%),
+      linear-gradient(135deg, hsl(var(--gold)) 50%, transparent 50%);
+  }
+  /* Firefox keeps native spinners — hide them so our custom indicator shows */
+  @supports (-moz-appearance: none) {
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+  }
+}
+
+
+/* Custom scrollbar for premium feel — used in course timeline */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(var(--border) / 0.6);
+  border-radius: 999px;
+  transition: background 0.2s ease;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--border));
+}
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border) / 0.6) transparent;
+}

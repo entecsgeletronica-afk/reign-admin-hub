@@ -1,0 +1,1 @@
+ALTER VIEW public.commercial_offers_safe SET (security_invoker = true);
