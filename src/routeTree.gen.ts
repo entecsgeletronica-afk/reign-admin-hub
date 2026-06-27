@@ -31,10 +31,17 @@ import { Route as AdminShellQaCapasRouteImport } from './routes/admin/_shell/qa-
 import { Route as AdminShellPlanosRouteImport } from './routes/admin/_shell/planos'
 import { Route as AdminShellOfertasRouteImport } from './routes/admin/_shell/ofertas'
 import { Route as AdminShellIdiomasRouteImport } from './routes/admin/_shell/idiomas'
+import { Route as AdminShellHospedarVideosRouteImport } from './routes/admin/_shell/hospedar-videos'
+import { Route as AdminShellEspionarOfertasRouteImport } from './routes/admin/_shell/espionar-ofertas'
 import { Route as AdminShellDashboardRouteImport } from './routes/admin/_shell/dashboard'
+import { Route as AdminShellCriarQuizRouteImport } from './routes/admin/_shell/criar-quiz'
+import { Route as AdminShellCriarEClonarSitesRouteImport } from './routes/admin/_shell/criar-e-clonar-sites'
 import { Route as AdminShellCoresRouteImport } from './routes/admin/_shell/cores'
 import { Route as AdminShellCatalogoRouteImport } from './routes/admin/_shell/catalogo'
+import { Route as AdminShellCadastrarProdutoRouteImport } from './routes/admin/_shell/cadastrar-produto'
+import { Route as AdminShellCadastrarPerfectPayRouteImport } from './routes/admin/_shell/cadastrar-perfect-pay'
 import { Route as AdminShellBrandingRouteImport } from './routes/admin/_shell/branding'
+import { Route as AdminShellAreasMembrosRouteImport } from './routes/admin/_shell/areas-membros'
 import { Route as AdminShellAreasRouteImport } from './routes/admin/_shell/areas'
 import { Route as ApiPublicPerfectpayWebhookRouteImport } from './routes/api/public/perfectpay.webhook'
 import { Route as AdminShellUsuariosUserIdRouteImport } from './routes/admin/_shell/usuarios.$userId'
@@ -157,11 +164,34 @@ const AdminShellIdiomasRoute = AdminShellIdiomasRouteImport.update({
   path: '/idiomas',
   getParentRoute: () => AdminShellRoute,
 } as any)
+const AdminShellHospedarVideosRoute =
+  AdminShellHospedarVideosRouteImport.update({
+    id: '/hospedar-videos',
+    path: '/hospedar-videos',
+    getParentRoute: () => AdminShellRoute,
+  } as any)
+const AdminShellEspionarOfertasRoute =
+  AdminShellEspionarOfertasRouteImport.update({
+    id: '/espionar-ofertas',
+    path: '/espionar-ofertas',
+    getParentRoute: () => AdminShellRoute,
+  } as any)
 const AdminShellDashboardRoute = AdminShellDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => AdminShellRoute,
 } as any)
+const AdminShellCriarQuizRoute = AdminShellCriarQuizRouteImport.update({
+  id: '/criar-quiz',
+  path: '/criar-quiz',
+  getParentRoute: () => AdminShellRoute,
+} as any)
+const AdminShellCriarEClonarSitesRoute =
+  AdminShellCriarEClonarSitesRouteImport.update({
+    id: '/criar-e-clonar-sites',
+    path: '/criar-e-clonar-sites',
+    getParentRoute: () => AdminShellRoute,
+  } as any)
 const AdminShellCoresRoute = AdminShellCoresRouteImport.update({
   id: '/cores',
   path: '/cores',
@@ -172,9 +202,26 @@ const AdminShellCatalogoRoute = AdminShellCatalogoRouteImport.update({
   path: '/catalogo',
   getParentRoute: () => AdminShellRoute,
 } as any)
+const AdminShellCadastrarProdutoRoute =
+  AdminShellCadastrarProdutoRouteImport.update({
+    id: '/cadastrar-produto',
+    path: '/cadastrar-produto',
+    getParentRoute: () => AdminShellRoute,
+  } as any)
+const AdminShellCadastrarPerfectPayRoute =
+  AdminShellCadastrarPerfectPayRouteImport.update({
+    id: '/cadastrar-perfect-pay',
+    path: '/cadastrar-perfect-pay',
+    getParentRoute: () => AdminShellRoute,
+  } as any)
 const AdminShellBrandingRoute = AdminShellBrandingRouteImport.update({
   id: '/branding',
   path: '/branding',
+  getParentRoute: () => AdminShellRoute,
+} as any)
+const AdminShellAreasMembrosRoute = AdminShellAreasMembrosRouteImport.update({
+  id: '/areas-membros',
+  path: '/areas-membros',
   getParentRoute: () => AdminShellRoute,
 } as any)
 const AdminShellAreasRoute = AdminShellAreasRouteImport.update({
@@ -251,10 +298,17 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/perfil/': typeof PerfilIndexRoute
   '/admin/areas': typeof AdminShellAreasRouteWithChildren
+  '/admin/areas-membros': typeof AdminShellAreasMembrosRoute
   '/admin/branding': typeof AdminShellBrandingRoute
+  '/admin/cadastrar-perfect-pay': typeof AdminShellCadastrarPerfectPayRoute
+  '/admin/cadastrar-produto': typeof AdminShellCadastrarProdutoRoute
   '/admin/catalogo': typeof AdminShellCatalogoRoute
   '/admin/cores': typeof AdminShellCoresRoute
+  '/admin/criar-e-clonar-sites': typeof AdminShellCriarEClonarSitesRoute
+  '/admin/criar-quiz': typeof AdminShellCriarQuizRoute
   '/admin/dashboard': typeof AdminShellDashboardRoute
+  '/admin/espionar-ofertas': typeof AdminShellEspionarOfertasRoute
+  '/admin/hospedar-videos': typeof AdminShellHospedarVideosRoute
   '/admin/idiomas': typeof AdminShellIdiomasRoute
   '/admin/ofertas': typeof AdminShellOfertasRoute
   '/admin/planos': typeof AdminShellPlanosRoute
@@ -287,10 +341,17 @@ export interface FileRoutesByTo {
   '/produto/$slug': typeof ProdutoSlugRoute
   '/perfil': typeof PerfilIndexRoute
   '/admin/areas': typeof AdminShellAreasRouteWithChildren
+  '/admin/areas-membros': typeof AdminShellAreasMembrosRoute
   '/admin/branding': typeof AdminShellBrandingRoute
+  '/admin/cadastrar-perfect-pay': typeof AdminShellCadastrarPerfectPayRoute
+  '/admin/cadastrar-produto': typeof AdminShellCadastrarProdutoRoute
   '/admin/catalogo': typeof AdminShellCatalogoRoute
   '/admin/cores': typeof AdminShellCoresRoute
+  '/admin/criar-e-clonar-sites': typeof AdminShellCriarEClonarSitesRoute
+  '/admin/criar-quiz': typeof AdminShellCriarQuizRoute
   '/admin/dashboard': typeof AdminShellDashboardRoute
+  '/admin/espionar-ofertas': typeof AdminShellEspionarOfertasRoute
+  '/admin/hospedar-videos': typeof AdminShellHospedarVideosRoute
   '/admin/idiomas': typeof AdminShellIdiomasRoute
   '/admin/ofertas': typeof AdminShellOfertasRoute
   '/admin/planos': typeof AdminShellPlanosRoute
@@ -326,10 +387,17 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/perfil/': typeof PerfilIndexRoute
   '/admin/_shell/areas': typeof AdminShellAreasRouteWithChildren
+  '/admin/_shell/areas-membros': typeof AdminShellAreasMembrosRoute
   '/admin/_shell/branding': typeof AdminShellBrandingRoute
+  '/admin/_shell/cadastrar-perfect-pay': typeof AdminShellCadastrarPerfectPayRoute
+  '/admin/_shell/cadastrar-produto': typeof AdminShellCadastrarProdutoRoute
   '/admin/_shell/catalogo': typeof AdminShellCatalogoRoute
   '/admin/_shell/cores': typeof AdminShellCoresRoute
+  '/admin/_shell/criar-e-clonar-sites': typeof AdminShellCriarEClonarSitesRoute
+  '/admin/_shell/criar-quiz': typeof AdminShellCriarQuizRoute
   '/admin/_shell/dashboard': typeof AdminShellDashboardRoute
+  '/admin/_shell/espionar-ofertas': typeof AdminShellEspionarOfertasRoute
+  '/admin/_shell/hospedar-videos': typeof AdminShellHospedarVideosRoute
   '/admin/_shell/idiomas': typeof AdminShellIdiomasRoute
   '/admin/_shell/ofertas': typeof AdminShellOfertasRoute
   '/admin/_shell/planos': typeof AdminShellPlanosRoute
@@ -366,10 +434,17 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/perfil/'
     | '/admin/areas'
+    | '/admin/areas-membros'
     | '/admin/branding'
+    | '/admin/cadastrar-perfect-pay'
+    | '/admin/cadastrar-produto'
     | '/admin/catalogo'
     | '/admin/cores'
+    | '/admin/criar-e-clonar-sites'
+    | '/admin/criar-quiz'
     | '/admin/dashboard'
+    | '/admin/espionar-ofertas'
+    | '/admin/hospedar-videos'
     | '/admin/idiomas'
     | '/admin/ofertas'
     | '/admin/planos'
@@ -402,10 +477,17 @@ export interface FileRouteTypes {
     | '/produto/$slug'
     | '/perfil'
     | '/admin/areas'
+    | '/admin/areas-membros'
     | '/admin/branding'
+    | '/admin/cadastrar-perfect-pay'
+    | '/admin/cadastrar-produto'
     | '/admin/catalogo'
     | '/admin/cores'
+    | '/admin/criar-e-clonar-sites'
+    | '/admin/criar-quiz'
     | '/admin/dashboard'
+    | '/admin/espionar-ofertas'
+    | '/admin/hospedar-videos'
     | '/admin/idiomas'
     | '/admin/ofertas'
     | '/admin/planos'
@@ -440,10 +522,17 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/perfil/'
     | '/admin/_shell/areas'
+    | '/admin/_shell/areas-membros'
     | '/admin/_shell/branding'
+    | '/admin/_shell/cadastrar-perfect-pay'
+    | '/admin/_shell/cadastrar-produto'
     | '/admin/_shell/catalogo'
     | '/admin/_shell/cores'
+    | '/admin/_shell/criar-e-clonar-sites'
+    | '/admin/_shell/criar-quiz'
     | '/admin/_shell/dashboard'
+    | '/admin/_shell/espionar-ofertas'
+    | '/admin/_shell/hospedar-videos'
     | '/admin/_shell/idiomas'
     | '/admin/_shell/ofertas'
     | '/admin/_shell/planos'
@@ -635,11 +724,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminShellIdiomasRouteImport
       parentRoute: typeof AdminShellRoute
     }
+    '/admin/_shell/hospedar-videos': {
+      id: '/admin/_shell/hospedar-videos'
+      path: '/hospedar-videos'
+      fullPath: '/admin/hospedar-videos'
+      preLoaderRoute: typeof AdminShellHospedarVideosRouteImport
+      parentRoute: typeof AdminShellRoute
+    }
+    '/admin/_shell/espionar-ofertas': {
+      id: '/admin/_shell/espionar-ofertas'
+      path: '/espionar-ofertas'
+      fullPath: '/admin/espionar-ofertas'
+      preLoaderRoute: typeof AdminShellEspionarOfertasRouteImport
+      parentRoute: typeof AdminShellRoute
+    }
     '/admin/_shell/dashboard': {
       id: '/admin/_shell/dashboard'
       path: '/dashboard'
       fullPath: '/admin/dashboard'
       preLoaderRoute: typeof AdminShellDashboardRouteImport
+      parentRoute: typeof AdminShellRoute
+    }
+    '/admin/_shell/criar-quiz': {
+      id: '/admin/_shell/criar-quiz'
+      path: '/criar-quiz'
+      fullPath: '/admin/criar-quiz'
+      preLoaderRoute: typeof AdminShellCriarQuizRouteImport
+      parentRoute: typeof AdminShellRoute
+    }
+    '/admin/_shell/criar-e-clonar-sites': {
+      id: '/admin/_shell/criar-e-clonar-sites'
+      path: '/criar-e-clonar-sites'
+      fullPath: '/admin/criar-e-clonar-sites'
+      preLoaderRoute: typeof AdminShellCriarEClonarSitesRouteImport
       parentRoute: typeof AdminShellRoute
     }
     '/admin/_shell/cores': {
@@ -656,11 +773,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminShellCatalogoRouteImport
       parentRoute: typeof AdminShellRoute
     }
+    '/admin/_shell/cadastrar-produto': {
+      id: '/admin/_shell/cadastrar-produto'
+      path: '/cadastrar-produto'
+      fullPath: '/admin/cadastrar-produto'
+      preLoaderRoute: typeof AdminShellCadastrarProdutoRouteImport
+      parentRoute: typeof AdminShellRoute
+    }
+    '/admin/_shell/cadastrar-perfect-pay': {
+      id: '/admin/_shell/cadastrar-perfect-pay'
+      path: '/cadastrar-perfect-pay'
+      fullPath: '/admin/cadastrar-perfect-pay'
+      preLoaderRoute: typeof AdminShellCadastrarPerfectPayRouteImport
+      parentRoute: typeof AdminShellRoute
+    }
     '/admin/_shell/branding': {
       id: '/admin/_shell/branding'
       path: '/branding'
       fullPath: '/admin/branding'
       preLoaderRoute: typeof AdminShellBrandingRouteImport
+      parentRoute: typeof AdminShellRoute
+    }
+    '/admin/_shell/areas-membros': {
+      id: '/admin/_shell/areas-membros'
+      path: '/areas-membros'
+      fullPath: '/admin/areas-membros'
+      preLoaderRoute: typeof AdminShellAreasMembrosRouteImport
       parentRoute: typeof AdminShellRoute
     }
     '/admin/_shell/areas': {
@@ -776,10 +914,17 @@ const AdminShellUsuariosRouteWithChildren =
 
 interface AdminShellRouteChildren {
   AdminShellAreasRoute: typeof AdminShellAreasRouteWithChildren
+  AdminShellAreasMembrosRoute: typeof AdminShellAreasMembrosRoute
   AdminShellBrandingRoute: typeof AdminShellBrandingRoute
+  AdminShellCadastrarPerfectPayRoute: typeof AdminShellCadastrarPerfectPayRoute
+  AdminShellCadastrarProdutoRoute: typeof AdminShellCadastrarProdutoRoute
   AdminShellCatalogoRoute: typeof AdminShellCatalogoRoute
   AdminShellCoresRoute: typeof AdminShellCoresRoute
+  AdminShellCriarEClonarSitesRoute: typeof AdminShellCriarEClonarSitesRoute
+  AdminShellCriarQuizRoute: typeof AdminShellCriarQuizRoute
   AdminShellDashboardRoute: typeof AdminShellDashboardRoute
+  AdminShellEspionarOfertasRoute: typeof AdminShellEspionarOfertasRoute
+  AdminShellHospedarVideosRoute: typeof AdminShellHospedarVideosRoute
   AdminShellIdiomasRoute: typeof AdminShellIdiomasRoute
   AdminShellOfertasRoute: typeof AdminShellOfertasRoute
   AdminShellPlanosRoute: typeof AdminShellPlanosRoute
@@ -798,10 +943,17 @@ interface AdminShellRouteChildren {
 
 const AdminShellRouteChildren: AdminShellRouteChildren = {
   AdminShellAreasRoute: AdminShellAreasRouteWithChildren,
+  AdminShellAreasMembrosRoute: AdminShellAreasMembrosRoute,
   AdminShellBrandingRoute: AdminShellBrandingRoute,
+  AdminShellCadastrarPerfectPayRoute: AdminShellCadastrarPerfectPayRoute,
+  AdminShellCadastrarProdutoRoute: AdminShellCadastrarProdutoRoute,
   AdminShellCatalogoRoute: AdminShellCatalogoRoute,
   AdminShellCoresRoute: AdminShellCoresRoute,
+  AdminShellCriarEClonarSitesRoute: AdminShellCriarEClonarSitesRoute,
+  AdminShellCriarQuizRoute: AdminShellCriarQuizRoute,
   AdminShellDashboardRoute: AdminShellDashboardRoute,
+  AdminShellEspionarOfertasRoute: AdminShellEspionarOfertasRoute,
+  AdminShellHospedarVideosRoute: AdminShellHospedarVideosRoute,
   AdminShellIdiomasRoute: AdminShellIdiomasRoute,
   AdminShellOfertasRoute: AdminShellOfertasRoute,
   AdminShellPlanosRoute: AdminShellPlanosRoute,
