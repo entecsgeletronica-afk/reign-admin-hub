@@ -86,7 +86,7 @@ const groups: NavGroup[] = [
     items: [
       { label: "Áreas de membros", to: "/admin/areas", icon: Layers },
       { label: "Cadastrar produto", to: "/admin/catalogo", icon: LayoutGrid },
-      { label: "Oferta", to: "/admin/ofertas", icon: OfferIcon },
+      { label: "Ofertas", to: "/admin/ofertas", icon: OfferIcon },
     ],
   },
   {
