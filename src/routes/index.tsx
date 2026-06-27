@@ -5,10 +5,10 @@ import { useAuth } from "@/integrations/supabase/auth-context";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Área de membros" },
+      { title: "Reino das Cores — Sua área de membros" },
       {
         name: "description",
-        content: "Acesse sua área de membros.",
+        content: "Entre na sua área de membros do Reino das Cores e continue suas histórias bíblicas para colorir.",
       },
     ],
   }),

@@ -48,14 +48,15 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "APP COLORIR" },
-      { name: "description", content: "APP COLORIR — Painel administrativo." },
-      { name: "author", content: "APP COLORIR" },
-      { property: "og:title", content: "APP COLORIR" },
-      { property: "og:description", content: "APP COLORIR — Painel administrativo." },
+      { title: "Reino das Cores — Atividades bíblicas para colorir" },
+      { name: "description", content: "Reino das Cores é a área de membros com histórias bíblicas para crianças colorirem, pintarem e aprenderem brincando — acesse, escolha um desenho e comece a pintar." },
+      { name: "author", content: "Reino das Cores" },
+      { property: "og:site_name", content: "Reino das Cores" },
+      { property: "og:title", content: "Reino das Cores — Atividades bíblicas para colorir" },
+      { property: "og:description", content: "Histórias bíblicas para crianças colorirem, pintarem e aprenderem brincando." },
       { property: "og:type", content: "website" },
-      { name: "twitter:title", content: "APP COLORIR" },
-      { name: "twitter:description", content: "APP COLORIR — Painel administrativo." },
+      { name: "twitter:title", content: "Reino das Cores — Atividades bíblicas para colorir" },
+      { name: "twitter:description", content: "Histórias bíblicas para crianças colorirem, pintarem e aprenderem brincando." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/6e5aeb99-d405-4506-bf68-8eba5deca811/id-preview-0c3fbca4--035ec24e-9cb5-4078-90e9-e909e36a413c.lovable.app-1777772350577.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/6e5aeb99-d405-4506-bf68-8eba5deca811/id-preview-0c3fbca4--035ec24e-9cb5-4078-90e9-e909e36a413c.lovable.app-1777772350577.png" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -78,6 +79,24 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&display=swap",
+      },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "Reino das Cores",
+          url: "https://reign-admin-hub.lovable.app",
+          description:
+            "Área de membros com histórias bíblicas para crianças colorirem, pintarem e aprenderem brincando.",
+          publisher: {
+            "@type": "Organization",
+            name: "Reino das Cores",
+            url: "https://reign-admin-hub.lovable.app",
+          },
+        }),
       },
     ],
   }),

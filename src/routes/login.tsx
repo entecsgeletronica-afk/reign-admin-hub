@@ -20,6 +20,24 @@ const signupSchema = loginSchema.extend({
 const bootstrapSchema = signupSchema;
 
 export const Route = createFileRoute("/login")({
+  head: () => ({
+    meta: [
+      { title: "Entrar no Reino das Cores" },
+      {
+        name: "description",
+        content: "Faça login no Reino das Cores e acesse histórias bíblicas para crianças colorirem, pintarem e aprenderem brincando.",
+      },
+      { property: "og:title", content: "Entrar no Reino das Cores" },
+      {
+        property: "og:description",
+        content: "Acesse sua conta no Reino das Cores e continue suas atividades de pintura.",
+      },
+      { property: "og:url", content: "https://reign-admin-hub.lovable.app/login" },
+    ],
+    links: [
+      { rel: "canonical", href: "https://reign-admin-hub.lovable.app/login" },
+    ],
+  }),
   component: UserLoginPage,
 });
 
