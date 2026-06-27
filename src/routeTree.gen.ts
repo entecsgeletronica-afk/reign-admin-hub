@@ -35,6 +35,7 @@ import { Route as AdminShellDashboardRouteImport } from './routes/admin/_shell/d
 import { Route as AdminShellCoresRouteImport } from './routes/admin/_shell/cores'
 import { Route as AdminShellCatalogoRouteImport } from './routes/admin/_shell/catalogo'
 import { Route as AdminShellBrandingRouteImport } from './routes/admin/_shell/branding'
+import { Route as AdminShellAreasMembrosRouteImport } from './routes/admin/_shell/areas-membros'
 import { Route as AdminShellAreasRouteImport } from './routes/admin/_shell/areas'
 import { Route as ApiPublicPerfectpayWebhookRouteImport } from './routes/api/public/perfectpay.webhook'
 import { Route as AdminShellUsuariosUserIdRouteImport } from './routes/admin/_shell/usuarios.$userId'
@@ -177,6 +178,11 @@ const AdminShellBrandingRoute = AdminShellBrandingRouteImport.update({
   path: '/branding',
   getParentRoute: () => AdminShellRoute,
 } as any)
+const AdminShellAreasMembrosRoute = AdminShellAreasMembrosRouteImport.update({
+  id: '/areas-membros',
+  path: '/areas-membros',
+  getParentRoute: () => AdminShellRoute,
+} as any)
 const AdminShellAreasRoute = AdminShellAreasRouteImport.update({
   id: '/areas',
   path: '/areas',
@@ -251,6 +257,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/perfil/': typeof PerfilIndexRoute
   '/admin/areas': typeof AdminShellAreasRouteWithChildren
+  '/admin/areas-membros': typeof AdminShellAreasMembrosRoute
   '/admin/branding': typeof AdminShellBrandingRoute
   '/admin/catalogo': typeof AdminShellCatalogoRoute
   '/admin/cores': typeof AdminShellCoresRoute
@@ -287,6 +294,7 @@ export interface FileRoutesByTo {
   '/produto/$slug': typeof ProdutoSlugRoute
   '/perfil': typeof PerfilIndexRoute
   '/admin/areas': typeof AdminShellAreasRouteWithChildren
+  '/admin/areas-membros': typeof AdminShellAreasMembrosRoute
   '/admin/branding': typeof AdminShellBrandingRoute
   '/admin/catalogo': typeof AdminShellCatalogoRoute
   '/admin/cores': typeof AdminShellCoresRoute
@@ -326,6 +334,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/perfil/': typeof PerfilIndexRoute
   '/admin/_shell/areas': typeof AdminShellAreasRouteWithChildren
+  '/admin/_shell/areas-membros': typeof AdminShellAreasMembrosRoute
   '/admin/_shell/branding': typeof AdminShellBrandingRoute
   '/admin/_shell/catalogo': typeof AdminShellCatalogoRoute
   '/admin/_shell/cores': typeof AdminShellCoresRoute
@@ -366,6 +375,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/perfil/'
     | '/admin/areas'
+    | '/admin/areas-membros'
     | '/admin/branding'
     | '/admin/catalogo'
     | '/admin/cores'
@@ -402,6 +412,7 @@ export interface FileRouteTypes {
     | '/produto/$slug'
     | '/perfil'
     | '/admin/areas'
+    | '/admin/areas-membros'
     | '/admin/branding'
     | '/admin/catalogo'
     | '/admin/cores'
@@ -440,6 +451,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/perfil/'
     | '/admin/_shell/areas'
+    | '/admin/_shell/areas-membros'
     | '/admin/_shell/branding'
     | '/admin/_shell/catalogo'
     | '/admin/_shell/cores'
@@ -663,6 +675,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminShellBrandingRouteImport
       parentRoute: typeof AdminShellRoute
     }
+    '/admin/_shell/areas-membros': {
+      id: '/admin/_shell/areas-membros'
+      path: '/areas-membros'
+      fullPath: '/admin/areas-membros'
+      preLoaderRoute: typeof AdminShellAreasMembrosRouteImport
+      parentRoute: typeof AdminShellRoute
+    }
     '/admin/_shell/areas': {
       id: '/admin/_shell/areas'
       path: '/areas'
@@ -776,6 +795,7 @@ const AdminShellUsuariosRouteWithChildren =
 
 interface AdminShellRouteChildren {
   AdminShellAreasRoute: typeof AdminShellAreasRouteWithChildren
+  AdminShellAreasMembrosRoute: typeof AdminShellAreasMembrosRoute
   AdminShellBrandingRoute: typeof AdminShellBrandingRoute
   AdminShellCatalogoRoute: typeof AdminShellCatalogoRoute
   AdminShellCoresRoute: typeof AdminShellCoresRoute
@@ -798,6 +818,7 @@ interface AdminShellRouteChildren {
 
 const AdminShellRouteChildren: AdminShellRouteChildren = {
   AdminShellAreasRoute: AdminShellAreasRouteWithChildren,
+  AdminShellAreasMembrosRoute: AdminShellAreasMembrosRoute,
   AdminShellBrandingRoute: AdminShellBrandingRoute,
   AdminShellCatalogoRoute: AdminShellCatalogoRoute,
   AdminShellCoresRoute: AdminShellCoresRoute,
