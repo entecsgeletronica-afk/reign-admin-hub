@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "check:routes": "node scripts/check-grid-navigation.mjs",
-    "sync:pages": "node scripts/sync-story-pages.mjs"
+    "sync:pages": "node scripts/sync-story-pages.mjs",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@cloudflare/vite-plugin": "^1.25.5",
