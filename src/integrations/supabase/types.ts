@@ -41,27 +41,6 @@ export type Database = {
         }
         Relationships: []
       }
-      projetomeuapp: {
-        Row: {
-          created_at: string
-          email: string | null
-          id: number
-          role: string | null
-        }
-        Insert: {
-          created_at?: string
-          email?: string | null
-          id?: number
-          role?: string | null
-        }
-        Update: {
-          created_at?: string
-          email?: string | null
-          id?: number
-          role?: string | null
-        }
-        Relationships: []
-      }
       user_roles: {
         Row: {
           created_at: string
