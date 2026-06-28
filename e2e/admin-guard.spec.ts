@@ -73,4 +73,24 @@ test.describe("Login admin", () => {
     await page.waitForLoadState("networkidle");
     expect(new URL(page.url()).pathname).toBe("/admin/usuarios");
   });
+
+  test("admin é redirecionado para /admin/dashboard e carrega KPIs", async ({ page }) => {
+    await page.goto("/admin/login");
+    await page.getByLabel(/e-mail/i).fill(ADMIN_EMAIL!);
+    await page.getByLabel(/senha/i).fill(ADMIN_PASSWORD!);
+    await page.getByRole("button", { name: /entrar no painel/i }).click();
+
+    // Redirect automático para o dashboard após resolver a role admin.
+    await page.waitForURL("**/admin/dashboard**", { timeout: 20_000 });
+    expect(new URL(page.url()).pathname).toBe("/admin/dashboard");
+
+    // KPIs principais aparecem (labels renderizados pelos KpiCard).
+    await expect(page.getByText(/receita do período/i)).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(/mrr|receita recorrente/i)).toBeVisible();
+    await expect(page.getByText(/ticket médio/i)).toBeVisible();
+
+    // Pelo menos um valor monetário em BRL foi renderizado (KPI carregado,
+    // mesmo que zerado: "R$ 0,00").
+    await expect(page.getByText(/R\$\s?\d/).first()).toBeVisible({ timeout: 15_000 });
+  });
 });
