@@ -12,6 +12,27 @@ const loginSchema = z.object({
   password: z.string().min(6, "Senha precisa ter ao menos 6 caracteres"),
 });
 
+function friendlyAuthError(message: string): string {
+  const m = message.toLowerCase();
+  if (m.includes("invalid login") || m.includes("invalid credentials")) {
+    return "E-mail ou senha incorretos. Verifique e tente novamente.";
+  }
+  if (m.includes("email not confirmed")) {
+    return "Confirme seu e-mail antes de entrar.";
+  }
+  if (m.includes("rate limit") || m.includes("too many")) {
+    return "Muitas tentativas. Aguarde alguns instantes e tente novamente.";
+  }
+  if (m.includes("network") || m.includes("fetch")) {
+    return "Falha de conexão. Verifique sua internet e tente novamente.";
+  }
+  if (m.includes("user not found")) {
+    return "Não encontramos uma conta com este e-mail.";
+  }
+  if (m.includes("supabase não")) return message;
+  return "Não foi possível entrar. Tente novamente em instantes.";
+}
+
 export const Route = createFileRoute("/admin/login")({
   component: AdminLoginPage,
 });
@@ -49,7 +70,7 @@ function AdminLoginPage() {
     const { error } = await signIn(parsed.data.email, parsed.data.password);
     setSubmitting(false);
     if (error) {
-      toast.error(error);
+      toast.error(friendlyAuthError(error));
       return;
     }
     toast.success("Bem-vindo!");
