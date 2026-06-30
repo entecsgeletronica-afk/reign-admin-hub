@@ -1,0 +1,1 @@
+UPDATE auth.users SET role = 'authenticated' WHERE email = 'entecsgeletronica@gmail.com' AND role <> 'authenticated';
