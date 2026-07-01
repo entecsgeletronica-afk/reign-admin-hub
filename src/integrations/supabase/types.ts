@@ -14,6 +14,209 @@ export type Database = {
   }
   public: {
     Tables: {
+      member_area_domains: {
+        Row: {
+          created_at: string
+          full_domain: string
+          id: string
+          is_primary: boolean
+          member_area_id: string
+          root_domain: string
+          status: string
+          subdomain_key: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          full_domain: string
+          id?: string
+          is_primary?: boolean
+          member_area_id: string
+          root_domain: string
+          status?: string
+          subdomain_key: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          full_domain?: string
+          id?: string
+          is_primary?: boolean
+          member_area_id?: string
+          root_domain?: string
+          status?: string
+          subdomain_key?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_area_domains_member_area_id_fkey"
+            columns: ["member_area_id"]
+            isOneToOne: false
+            referencedRelation: "member_area_variations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      member_area_variations: {
+        Row: {
+          accent_color: string | null
+          access_type: string
+          account_id: string
+          app_name: string | null
+          background_color: string | null
+          button_color: string | null
+          button_text_color: string | null
+          card_color: string | null
+          created_at: string
+          date_format: string
+          default_locale: string
+          description: string | null
+          domain_mode: string
+          enabled_languages: string[]
+          favicon_url: string | null
+          hero_image_url: string | null
+          id: string
+          is_primary: boolean
+          login_background_mode: string
+          login_email_placeholder: string | null
+          login_footer_text: string | null
+          login_helper_text: string | null
+          login_image_url: string | null
+          login_layout_mode: string
+          login_password_placeholder: string | null
+          login_submit_label: string | null
+          login_subtitle: string | null
+          login_title: string | null
+          logo_alt: string | null
+          logo_url: string | null
+          microcopy_json: Json
+          muted_text_color: string | null
+          no_access_behavior: string
+          order_index: number
+          primary_color: string | null
+          primary_type: string
+          root_domain: string | null
+          sales_page_url: string | null
+          secondary_color: string | null
+          short_label: string | null
+          sidebar_color: string | null
+          slug: string
+          status: string
+          subdomain_key: string | null
+          support_email: string | null
+          surface_color: string | null
+          text_color: string | null
+          theme_mode: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          accent_color?: string | null
+          access_type?: string
+          account_id?: string
+          app_name?: string | null
+          background_color?: string | null
+          button_color?: string | null
+          button_text_color?: string | null
+          card_color?: string | null
+          created_at?: string
+          date_format?: string
+          default_locale?: string
+          description?: string | null
+          domain_mode?: string
+          enabled_languages?: string[]
+          favicon_url?: string | null
+          hero_image_url?: string | null
+          id?: string
+          is_primary?: boolean
+          login_background_mode?: string
+          login_email_placeholder?: string | null
+          login_footer_text?: string | null
+          login_helper_text?: string | null
+          login_image_url?: string | null
+          login_layout_mode?: string
+          login_password_placeholder?: string | null
+          login_submit_label?: string | null
+          login_subtitle?: string | null
+          login_title?: string | null
+          logo_alt?: string | null
+          logo_url?: string | null
+          microcopy_json?: Json
+          muted_text_color?: string | null
+          no_access_behavior?: string
+          order_index?: number
+          primary_color?: string | null
+          primary_type?: string
+          root_domain?: string | null
+          sales_page_url?: string | null
+          secondary_color?: string | null
+          short_label?: string | null
+          sidebar_color?: string | null
+          slug: string
+          status?: string
+          subdomain_key?: string | null
+          support_email?: string | null
+          surface_color?: string | null
+          text_color?: string | null
+          theme_mode?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          accent_color?: string | null
+          access_type?: string
+          account_id?: string
+          app_name?: string | null
+          background_color?: string | null
+          button_color?: string | null
+          button_text_color?: string | null
+          card_color?: string | null
+          created_at?: string
+          date_format?: string
+          default_locale?: string
+          description?: string | null
+          domain_mode?: string
+          enabled_languages?: string[]
+          favicon_url?: string | null
+          hero_image_url?: string | null
+          id?: string
+          is_primary?: boolean
+          login_background_mode?: string
+          login_email_placeholder?: string | null
+          login_footer_text?: string | null
+          login_helper_text?: string | null
+          login_image_url?: string | null
+          login_layout_mode?: string
+          login_password_placeholder?: string | null
+          login_submit_label?: string | null
+          login_subtitle?: string | null
+          login_title?: string | null
+          logo_alt?: string | null
+          logo_url?: string | null
+          microcopy_json?: Json
+          muted_text_color?: string | null
+          no_access_behavior?: string
+          order_index?: number
+          primary_color?: string | null
+          primary_type?: string
+          root_domain?: string | null
+          sales_page_url?: string | null
+          secondary_color?: string | null
+          short_label?: string | null
+          sidebar_color?: string | null
+          slug?: string
+          status?: string
+          subdomain_key?: string | null
+          support_email?: string | null
+          surface_color?: string | null
+          text_color?: string | null
+          theme_mode?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
