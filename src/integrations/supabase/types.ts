@@ -14,6 +14,248 @@ export type Database = {
   }
   public: {
     Tables: {
+      catalog_products: {
+        Row: {
+          badge_text: string | null
+          content_source: string
+          cover_image_url: string | null
+          created_at: string
+          description: string | null
+          ebook_mode: string | null
+          external_url: string | null
+          hero_image_url: string | null
+          id: string
+          inherited_cover: boolean
+          is_featured: boolean
+          is_locked: boolean
+          is_mirror: boolean
+          is_published: boolean
+          mirror_type: string | null
+          order_index: number
+          product_type: string
+          section_id: string | null
+          slug: string
+          source_product_id: string | null
+          story_id: string | null
+          subtitle: string | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          variation_id: string | null
+        }
+        Insert: {
+          badge_text?: string | null
+          content_source?: string
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          ebook_mode?: string | null
+          external_url?: string | null
+          hero_image_url?: string | null
+          id?: string
+          inherited_cover?: boolean
+          is_featured?: boolean
+          is_locked?: boolean
+          is_mirror?: boolean
+          is_published?: boolean
+          mirror_type?: string | null
+          order_index?: number
+          product_type?: string
+          section_id?: string | null
+          slug: string
+          source_product_id?: string | null
+          story_id?: string | null
+          subtitle?: string | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          variation_id?: string | null
+        }
+        Update: {
+          badge_text?: string | null
+          content_source?: string
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          ebook_mode?: string | null
+          external_url?: string | null
+          hero_image_url?: string | null
+          id?: string
+          inherited_cover?: boolean
+          is_featured?: boolean
+          is_locked?: boolean
+          is_mirror?: boolean
+          is_published?: boolean
+          mirror_type?: string | null
+          order_index?: number
+          product_type?: string
+          section_id?: string | null
+          slug?: string
+          source_product_id?: string | null
+          story_id?: string | null
+          subtitle?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          variation_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_products_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_sections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_products_variation_id_fkey"
+            columns: ["variation_id"]
+            isOneToOne: false
+            referencedRelation: "member_area_variations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_sections: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          order_index: number
+          slug: string
+          subtitle: string | null
+          title: string
+          updated_at: string
+          variation_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          order_index?: number
+          slug: string
+          subtitle?: string | null
+          title: string
+          updated_at?: string
+          variation_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          order_index?: number
+          slug?: string
+          subtitle?: string | null
+          title?: string
+          updated_at?: string
+          variation_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_sections_variation_id_fkey"
+            columns: ["variation_id"]
+            isOneToOne: false
+            referencedRelation: "member_area_variations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_user_favorites: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_user_favorites_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      home_settings: {
+        Row: {
+          continue_fallback_product_id: string | null
+          featured_product_id: string | null
+          hero_button_label: string | null
+          hero_image_url: string | null
+          hero_label: string | null
+          hero_overlay_opacity: number | null
+          hero_subtitle: string | null
+          hero_title: string | null
+          id: string
+          updated_at: string
+          variation_id: string | null
+        }
+        Insert: {
+          continue_fallback_product_id?: string | null
+          featured_product_id?: string | null
+          hero_button_label?: string | null
+          hero_image_url?: string | null
+          hero_label?: string | null
+          hero_overlay_opacity?: number | null
+          hero_subtitle?: string | null
+          hero_title?: string | null
+          id?: string
+          updated_at?: string
+          variation_id?: string | null
+        }
+        Update: {
+          continue_fallback_product_id?: string | null
+          featured_product_id?: string | null
+          hero_button_label?: string | null
+          hero_image_url?: string | null
+          hero_label?: string | null
+          hero_overlay_opacity?: number | null
+          hero_subtitle?: string | null
+          hero_title?: string | null
+          id?: string
+          updated_at?: string
+          variation_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "home_settings_continue_fallback_product_id_fkey"
+            columns: ["continue_fallback_product_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "home_settings_featured_product_id_fkey"
+            columns: ["featured_product_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "home_settings_variation_id_fkey"
+            columns: ["variation_id"]
+            isOneToOne: false
+            referencedRelation: "member_area_variations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       member_area_domains: {
         Row: {
           created_at: string
@@ -243,6 +485,38 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      user_recent_products: {
+        Row: {
+          id: string
+          last_opened_at: string
+          product_id: string
+          progress_percent: number
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          last_opened_at?: string
+          product_id: string
+          progress_percent?: number
+          user_id: string
+        }
+        Update: {
+          id?: string
+          last_opened_at?: string
+          product_id?: string
+          progress_percent?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_recent_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
