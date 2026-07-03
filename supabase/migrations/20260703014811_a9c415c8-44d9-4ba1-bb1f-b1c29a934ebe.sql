@@ -1,0 +1,2 @@
+DROP POLICY IF EXISTS "Anyone can view member area domains" ON public.member_area_domains;
+CREATE POLICY "Admins can view member area domains" ON public.member_area_domains FOR SELECT TO authenticated USING (public.has_role(auth.uid(), 'admin'::public.app_role));
