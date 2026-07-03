@@ -486,6 +486,193 @@ export type Database = {
         }
         Relationships: []
       }
+      stories: {
+        Row: {
+          age_max: number | null
+          age_min: number | null
+          age_range: string | null
+          category_id: string | null
+          cover_image_url: string | null
+          created_at: string
+          description: string | null
+          difficulty_level: number | null
+          estimated_minutes: number | null
+          id: string
+          is_active: boolean
+          is_featured: boolean
+          is_new: boolean
+          loved: number
+          short_description: string | null
+          slug: string
+          sort_order: number
+          subtitle: string | null
+          testament: string | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          age_max?: number | null
+          age_min?: number | null
+          age_range?: string | null
+          category_id?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          difficulty_level?: number | null
+          estimated_minutes?: number | null
+          id?: string
+          is_active?: boolean
+          is_featured?: boolean
+          is_new?: boolean
+          loved?: number
+          short_description?: string | null
+          slug: string
+          sort_order?: number
+          subtitle?: string | null
+          testament?: string | null
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          age_max?: number | null
+          age_min?: number | null
+          age_range?: string | null
+          category_id?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          difficulty_level?: number | null
+          estimated_minutes?: number | null
+          id?: string
+          is_active?: boolean
+          is_featured?: boolean
+          is_new?: boolean
+          loved?: number
+          short_description?: string | null
+          slug?: string
+          sort_order?: number
+          subtitle?: string | null
+          testament?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stories_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "story_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stories_pages: {
+        Row: {
+          created_at: string
+          id: string
+          image_colored_sample_url: string | null
+          image_lineart_url: string | null
+          image_preview_url: string | null
+          is_active: boolean
+          mobile_focus_x: number | null
+          mobile_focus_y: number | null
+          page_number: number
+          recommended_zoom: number | null
+          story_id: string
+          svg_markup: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_colored_sample_url?: string | null
+          image_lineart_url?: string | null
+          image_preview_url?: string | null
+          is_active?: boolean
+          mobile_focus_x?: number | null
+          mobile_focus_y?: number | null
+          page_number: number
+          recommended_zoom?: number | null
+          story_id: string
+          svg_markup?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_colored_sample_url?: string | null
+          image_lineart_url?: string | null
+          image_preview_url?: string | null
+          is_active?: boolean
+          mobile_focus_x?: number | null
+          mobile_focus_y?: number | null
+          page_number?: number
+          recommended_zoom?: number | null
+          story_id?: string
+          svg_markup?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stories_pages_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      story_categories: {
+        Row: {
+          color: string | null
+          cover_image_url: string | null
+          created_at: string
+          description: string | null
+          emoji: string | null
+          icon_url: string | null
+          id: string
+          is_active: boolean
+          slug: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          emoji?: string | null
+          icon_url?: string | null
+          id?: string
+          is_active?: boolean
+          slug: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          emoji?: string | null
+          icon_url?: string | null
+          id?: string
+          is_active?: boolean
+          slug?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_recent_products: {
         Row: {
           id: string
