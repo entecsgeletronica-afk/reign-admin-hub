@@ -200,6 +200,66 @@ export async function reorderPages(
 
 /* ---------------- Storage uploads ---------------- */
 
+// Validation constants for image uploads
+const ALLOWED_IMAGE_MIME = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/jpg",
+  "image/webp",
+  "image/svg+xml",
+]);
+const ALLOWED_EXT = new Set(["png", "jpg", "jpeg", "webp", "svg"]);
+const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB
+
+function formatBytes(n: number): string {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  return `${(n / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+export function validateImageFile(file: File): void {
+  const ext = (file.name.split(".").pop() || "").toLowerCase();
+  const mime = (file.type || "").toLowerCase();
+
+  if (file.size === 0) {
+    throw new Error(`"${file.name}" está vazio (0 bytes).`);
+  }
+  if (file.size > MAX_FILE_BYTES) {
+    throw new Error(
+      `"${file.name}" tem ${formatBytes(file.size)} — limite é ${formatBytes(MAX_FILE_BYTES)}.`,
+    );
+  }
+  // Accept if either MIME or extension is valid (some browsers send empty MIME)
+  const mimeOk = mime && ALLOWED_IMAGE_MIME.has(mime);
+  const extOk = ext && ALLOWED_EXT.has(ext);
+  if (!mimeOk && !extOk) {
+    throw new Error(
+      `"${file.name}" tem tipo não suportado (${mime || "desconhecido"}). Use PNG, JPG, WEBP ou SVG.`,
+    );
+  }
+}
+
+function describeStorageError(err: unknown, bucket: string, path: string): Error {
+  const raw = err as { message?: string; statusCode?: number | string; error?: string } | null;
+  const msg = raw?.message || String(err);
+  const status = raw?.statusCode ? ` [status ${raw.statusCode}]` : "";
+  const lower = msg.toLowerCase();
+
+  if (lower.includes("duplicate") || lower.includes("already exists")) {
+    return new Error(`Já existe um arquivo em ${bucket}/${path}${status}. Tente novamente.`);
+  }
+  if (lower.includes("row-level security") || lower.includes("unauthorized") || lower.includes("permission")) {
+    return new Error(`Sem permissão para enviar em "${bucket}"${status}. Verifique se você é admin.`);
+  }
+  if (lower.includes("payload") || lower.includes("too large")) {
+    return new Error(`Arquivo muito grande para o bucket "${bucket}"${status}.`);
+  }
+  if (lower.includes("bucket") && lower.includes("not found")) {
+    return new Error(`Bucket "${bucket}" não encontrado${status}. Contate o suporte.`);
+  }
+  return new Error(`Falha no Storage (${bucket})${status}: ${msg}`);
+}
+
 function makePath(storyId: string, file: File): string {
   const ext = file.name.split(".").pop()?.toLowerCase() || "png";
   const ts = Date.now();
@@ -208,21 +268,25 @@ function makePath(storyId: string, file: File): string {
 }
 
 export async function uploadPageLineart(storyId: string, file: File): Promise<string> {
+  validateImageFile(file);
   const path = makePath(storyId, file);
+  const bucket = "story-pages-lineart";
   const { error } = await supabase.storage
-    .from("story-pages-lineart")
+    .from(bucket)
     .upload(path, file, { cacheControl: "3600", upsert: false });
-  if (error) throw error;
-  return supabase.storage.from("story-pages-lineart").getPublicUrl(path).data.publicUrl;
+  if (error) throw describeStorageError(error, bucket, path);
+  return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
 }
 
 export async function uploadPagePreview(storyId: string, file: File): Promise<string> {
+  validateImageFile(file);
   const path = makePath(storyId, file);
+  const bucket = "story-pages-preview";
   const { error } = await supabase.storage
-    .from("story-pages-preview")
+    .from(bucket)
     .upload(path, file, { cacheControl: "3600", upsert: false });
-  if (error) throw error;
-  return supabase.storage.from("story-pages-preview").getPublicUrl(path).data.publicUrl;
+  if (error) throw describeStorageError(error, bucket, path);
+  return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
 }
 
 /**
@@ -236,6 +300,22 @@ export async function bulkUploadPages(args: {
   startingPageNumber?: number;
   onProgress?: (done: number, total: number) => void;
 }): Promise<DrawingPageRow[]> {
+  // Pre-validate ALL files before starting any upload so we fail fast with a
+  // clear reason (tipo/tamanho) instead of leaving half the batch uploaded.
+  const invalid: string[] = [];
+  for (const f of args.files) {
+    try {
+      validateImageFile(f);
+    } catch (e) {
+      invalid.push((e as Error).message);
+    }
+  }
+  if (invalid.length > 0) {
+    throw new Error(
+      `${invalid.length} arquivo(s) inválido(s):\n• ${invalid.slice(0, 5).join("\n• ")}${invalid.length > 5 ? `\n(+${invalid.length - 5} mais)` : ""}`,
+    );
+  }
+
   const sorted = [...args.files].sort((a, b) =>
     a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" }),
   );
@@ -244,16 +324,23 @@ export async function bulkUploadPages(args: {
 
   for (let i = 0; i < sorted.length; i++) {
     const file = sorted[i];
-    const url = await uploadPageLineart(args.storyId, file);
-    const page = await createPage({
-      storyId: args.storyId,
-      pageNumber: start + i,
-      title: file.name.replace(/\.[^.]+$/, ""),
-      imageLineartUrl: url,
-      imagePreviewUrl: url,
-    });
-    created.push(page);
-    args.onProgress?.(i + 1, sorted.length);
+    try {
+      const url = await uploadPageLineart(args.storyId, file);
+      const page = await createPage({
+        storyId: args.storyId,
+        pageNumber: start + i,
+        title: file.name.replace(/\.[^.]+$/, ""),
+        imageLineartUrl: url,
+        imagePreviewUrl: url,
+      });
+      created.push(page);
+      args.onProgress?.(i + 1, sorted.length);
+    } catch (e) {
+      const msg = (e as Error).message;
+      throw new Error(
+        `Falha na página ${start + i} ("${file.name}"): ${msg}${created.length > 0 ? ` — ${created.length} página(s) já foram enviadas antes da falha.` : ""}`,
+      );
+    }
   }
 
   return created;

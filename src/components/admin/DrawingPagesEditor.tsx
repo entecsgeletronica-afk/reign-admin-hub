@@ -47,6 +47,7 @@ import {
   reorderPages,
   updatePage,
   uploadPageLineart,
+  validateImageFile,
   type DrawingPageRow,
 } from "@/services/drawings-admin";
 
@@ -131,7 +132,10 @@ export function DrawingPagesEditor({ product, onBack }: Props) {
       setBulkProgress(null);
     },
     onError: (e: Error) => {
-      toast.error(`Erro no upload: ${e.message}`);
+      toast.error("Erro no upload em massa", {
+        description: e.message,
+        duration: 10000,
+      });
       setBulkProgress(null);
     },
   });
@@ -217,6 +221,7 @@ export function DrawingPagesEditor({ product, onBack }: Props) {
   const replaceImageMutation = useMutation({
     mutationFn: async ({ pageId, file }: { pageId: string; file: File }) => {
       if (!storyId) throw new Error("Story not ready");
+      validateImageFile(file);
       const url = await uploadPageLineart(storyId, file);
       await updatePage(pageId, {
         image_lineart_url: url,
@@ -229,7 +234,10 @@ export function DrawingPagesEditor({ product, onBack }: Props) {
       setReplacingPageId(null);
     },
     onError: (e: Error) => {
-      toast.error(e.message);
+      toast.error("Falha ao substituir imagem", {
+        description: e.message,
+        duration: 10000,
+      });
       setReplacingPageId(null);
     },
   });
