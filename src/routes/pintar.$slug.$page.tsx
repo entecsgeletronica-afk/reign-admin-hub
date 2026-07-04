@@ -693,7 +693,14 @@ function PaintPage() {
       return;
     }
     if (isFilling) {
-      floodFill(Math.round(pos.x), Math.round(pos.y), color);
+      // `pos` is in CSS pixels (canvas ctx uses a dpr transform for drawing),
+      // but floodFill operates on the raw pixel buffer (canvas.width/height =
+      // css * dpr). Scale the click to device pixels so the fill starts at
+      // the actual spot the user tapped — otherwise on any dpr ≠ 1 (mobile,
+      // tablet, or zoomed desktop) the bucket samples a different region
+      // (e.g. the sky) instead of the area under the cursor.
+      const dpr = window.devicePixelRatio || 1;
+      floodFill(Math.round(pos.x * dpr), Math.round(pos.y * dpr), color);
       playSfx("fill");
       maybeCelebrateCompletion();
       return;
