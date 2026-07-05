@@ -845,7 +845,12 @@ function PaintPage() {
     // Close tiny gaps created by JPEG compression / anti-aliasing / imported
     // transparent PNGs. This gives Tinta a continuous wall without visibly
     // changing the artwork because it only affects the invisible fill mask.
-    const radius = 2;
+    // Bumped from 2 → 3: several imported line-arts (Noé, Jonas, etc.) have
+    // 2-3px breaks between adjacent regions (braço/céu, mão/fundo). With
+    // radius=2 the bucket escapes through those gaps and paints the wrong
+    // area. Radius=3 is still invisible (mask only) but reliably closes
+    // them without visibly shrinking the fillable area.
+    const radius = 3;
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
         const flat = y * w + x;
