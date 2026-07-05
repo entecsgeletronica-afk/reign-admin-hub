@@ -767,7 +767,15 @@ function PaintPage() {
    * lineart image's alpha by drawing it once into a hidden buffer.
    */
   const lineartBufferRef = React.useRef<HTMLCanvasElement | null>(null);
-  const lineartMaskRef = React.useRef<{ width: number; height: number; data: Uint8Array } | null>(null);
+  const lineartMaskRef = React.useRef<{
+    width: number;
+    height: number;
+    /** Closed mask (line core + sealed micro-gaps) — walls for the flood BFS. */
+    data: Uint8Array;
+    /** Raw line-core pixels only — used by the halo-removal pass so paint can
+     *  slip under sealed gaps but never overwrite a visible stroke. */
+    base: Uint8Array;
+  } | null>(null);
 
   /**
    * Unified lineart pixel detector — single source of truth for "is this a
@@ -798,7 +806,12 @@ function PaintPage() {
     // Colored/dark imported strokes (blue-gray, brown, etc.) can have a
     // deceptively high average luminance. If the pixel is opaque and not
     // close to white, keep it as a wall for the bucket fill.
-    if (la >= LINE_ALPHA_STRONG && lum < 215 && chroma > 18) return true;
+    // Threshold 190 (was 215): several imported pages ship with baked-in
+    // pastel/skin shading (peach faces, watermark blobs). Their anti-aliased
+    // edges sit around lum 195-215 with chroma > 18 and were being flagged
+    // as walls, carving faces/hands into phantom fragments so the bucket
+    // painted "the wrong area". Real colored strokes are much darker.
+    if (la >= LINE_ALPHA_STRONG && lum < 190 && chroma > 18) return true;
     return false;
   }
 
@@ -825,7 +838,12 @@ function PaintPage() {
     return bctx.getImageData(0, 0, buf.width, buf.height);
   }
 
-  function ensureLineartMask(): { width: number; height: number; data: Uint8Array } | null {
+  function ensureLineartMask(): {
+    width: number;
+    height: number;
+    data: Uint8Array;
+    base: Uint8Array;
+  } | null {
     const canvas = canvasRef.current;
     if (!canvas) return null;
     const cached = lineartMaskRef.current;
@@ -842,42 +860,67 @@ function PaintPage() {
       if (isLineartPixel(lineart, i * 4)) base[i] = 1;
     }
 
-    // Close tiny gaps created by JPEG compression / anti-aliasing / imported
-    // transparent PNGs. This gives Tinta a continuous wall without visibly
-    // changing the artwork because it only affects the invisible fill mask.
-    // Bumped from 2 → 3: several imported line-arts (Noé, Jonas, etc.) have
-    // 2-3px breaks between adjacent regions (braço/céu, mão/fundo). With
-    // radius=2 the bucket escapes through those gaps and paints the wrong
-    // area. Radius=3 is still invisible (mask only) but reliably closes
-    // them without visibly shrinking the fillable area.
-    const radius = 3;
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        const flat = y * w + x;
-        if (base[flat]) {
-          mask[flat] = 1;
-          continue;
-        }
-        let nearLine = false;
-        for (let dy = -radius; dy <= radius && !nearLine; dy++) {
-          const ny = y + dy;
-          if (ny < 0 || ny >= h) continue;
-          for (let dx = -radius; dx <= radius; dx++) {
-            const nx = x + dx;
-            if (nx < 0 || nx >= w) continue;
-            if (base[ny * w + nx]) {
-              nearLine = true;
-              break;
-            }
-          }
-        }
-        if (nearLine) mask[flat] = 1;
-      }
-    }
+    // Seal tiny breaks in the strokes (JPEG compression / anti-aliasing /
+    // imported PNGs) with a morphological CLOSING (dilate → erode) instead of
+    // the previous dilate-only pass. Dilation alone fattened every stroke by
+    // `radius` px, which blocked 30-40% of the page: taps within 3px of any
+    // line silently did nothing and thin regions (fingers, small face areas)
+    // were sealed shut and never filled. Closing bridges real gaps between
+    // stroke ends but restores the original line thickness everywhere else,
+    // so narrow regions stay fillable.
+    // The radius scales with canvas resolution — gaps shrink proportionally
+    // when the page renders smaller (phone/tablet), so a fixed radius over-
+    // seals small canvases.
+    const radius = Math.max(2, Math.min(4, Math.round(w / 280)));
+    const dilated = dilateBinary(base, w, h, radius);
+    // Erosion = complement of dilation of the complement.
+    const inv = new Uint8Array(w * h);
+    for (let i = 0; i < inv.length; i++) inv[i] = dilated[i] ? 0 : 1;
+    const invDilated = dilateBinary(inv, w, h, radius);
+    for (let i = 0; i < mask.length; i++) mask[i] = invDilated[i] ? 0 : 1;
+    // Closing is a superset of the original set in theory; keep the union as
+    // a cheap safety net against border effects.
+    for (let i = 0; i < mask.length; i++) if (base[i]) mask[i] = 1;
 
-    const next = { width: w, height: h, data: mask };
+    const next = { width: w, height: h, data: mask, base };
     lineartMaskRef.current = next;
     return next;
+  }
+
+  /** Separable binary dilation with a square structuring element. */
+  function dilateBinary(src: Uint8Array, w: number, h: number, radius: number): Uint8Array {
+    const tmp = new Uint8Array(w * h);
+    const out = new Uint8Array(w * h);
+    for (let y = 0; y < h; y++) {
+      const row = y * w;
+      for (let x = 0; x < w; x++) {
+        let v = 0;
+        const lo = Math.max(0, x - radius);
+        const hi = Math.min(w - 1, x + radius);
+        for (let nx = lo; nx <= hi; nx++) {
+          if (src[row + nx]) {
+            v = 1;
+            break;
+          }
+        }
+        tmp[row + x] = v;
+      }
+    }
+    for (let x = 0; x < w; x++) {
+      for (let y = 0; y < h; y++) {
+        let v = 0;
+        const lo = Math.max(0, y - radius);
+        const hi = Math.min(h - 1, y + radius);
+        for (let ny = lo; ny <= hi; ny++) {
+          if (tmp[ny * w + x]) {
+            v = 1;
+            break;
+          }
+        }
+        out[y * w + x] = v;
+      }
+    }
+    return out;
   }
 
   /**
@@ -1120,9 +1163,42 @@ function PaintPage() {
       // than raw pixel detection so imported PNG/JPEG art with tiny line
       // gaps still behaves like a proper coloring-book page.
       const isLine = (flat: number): boolean => Boolean(lineMask?.data[flat]);
+      // Raw stroke pixels only — the halo pass may paint over sealed gap
+      // pixels (invisible) but never over an actual visible line.
+      const isCoreLine = (flat: number): boolean => Boolean(lineMask?.base[flat]);
+
+      // Kids tap imprecisely: if the tap lands on the line mask (on or right
+      // next to a stroke), snap to the nearest paintable pixel instead of
+      // silently doing nothing.
+      let sx = startX;
+      let sy = startY;
+      if (lineMask && isLine(sy * w + sx)) {
+        const SNAP = 10;
+        let bestD = Infinity;
+        let bx = -1;
+        let by = -1;
+        for (let dy = -SNAP; dy <= SNAP; dy++) {
+          const ny = sy + dy;
+          if (ny < 0 || ny >= h) continue;
+          for (let dx = -SNAP; dx <= SNAP; dx++) {
+            const nx = sx + dx;
+            if (nx < 0 || nx >= w) continue;
+            if (isLine(ny * w + nx)) continue;
+            const d = dx * dx + dy * dy;
+            if (d < bestD) {
+              bestD = d;
+              bx = nx;
+              by = ny;
+            }
+          }
+        }
+        if (bx < 0) return; // solid line area — nothing to fill
+        sx = bx;
+        sy = by;
+      }
 
       // Match start color on the paint layer (so we don't repaint a different already-filled region).
-      const startFlat = startY * w + startX;
+      const startFlat = sy * w + sx;
       const startIdx = startFlat * 4;
       const sR = data[startIdx], sG = data[startIdx + 1], sB = data[startIdx + 2], sA = data[startIdx + 3];
       const PAINT_TOL = 32;
@@ -1148,12 +1224,10 @@ function PaintPage() {
         );
       };
 
-      // If the user clicked exactly on a line, abort.
-      if (isLine(startFlat)) return;
       // If clicking on the same fill color, skip.
       if (sR === fill[0] && sG === fill[1] && sB === fill[2] && sA === fill[3]) return;
 
-      const stack: number[] = [startX, startY];
+      const stack: number[] = [sx, sy];
       const visited = new Uint8Array(w * h);
 
       // Phase 1: BFS region — only across pixels matching the start color AND not on a line.
@@ -1190,10 +1264,10 @@ function PaintPage() {
           ];
           for (const nf of neighbors) {
             if (nf < 0 || region[nf]) continue;
-            // Don't paint over the line core itself. Uses the same closed
-            // mask as Phase 1 so the halo-removal pass cannot cross or
-            // overwrite imported image borders.
-            if (isLine(nf)) continue;
+            // Block only on the raw stroke core: the closed mask includes
+            // invisible sealed-gap pixels, and painting 2px under those
+            // kills the white halo without ever covering a visible line.
+            if (isCoreLine(nf)) continue;
             region[nf] = 1;
             next.push(nf);
           }
