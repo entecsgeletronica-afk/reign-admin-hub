@@ -1158,9 +1158,42 @@ function PaintPage() {
       // than raw pixel detection so imported PNG/JPEG art with tiny line
       // gaps still behaves like a proper coloring-book page.
       const isLine = (flat: number): boolean => Boolean(lineMask?.data[flat]);
+      // Raw stroke pixels only — the halo pass may paint over sealed gap
+      // pixels (invisible) but never over an actual visible line.
+      const isCoreLine = (flat: number): boolean => Boolean(lineMask?.base[flat]);
+
+      // Kids tap imprecisely: if the tap lands on the line mask (on or right
+      // next to a stroke), snap to the nearest paintable pixel instead of
+      // silently doing nothing.
+      let sx = startX;
+      let sy = startY;
+      if (lineMask && isLine(sy * w + sx)) {
+        const SNAP = 10;
+        let bestD = Infinity;
+        let bx = -1;
+        let by = -1;
+        for (let dy = -SNAP; dy <= SNAP; dy++) {
+          const ny = sy + dy;
+          if (ny < 0 || ny >= h) continue;
+          for (let dx = -SNAP; dx <= SNAP; dx++) {
+            const nx = sx + dx;
+            if (nx < 0 || nx >= w) continue;
+            if (isLine(ny * w + nx)) continue;
+            const d = dx * dx + dy * dy;
+            if (d < bestD) {
+              bestD = d;
+              bx = nx;
+              by = ny;
+            }
+          }
+        }
+        if (bx < 0) return; // solid line area — nothing to fill
+        sx = bx;
+        sy = by;
+      }
 
       // Match start color on the paint layer (so we don't repaint a different already-filled region).
-      const startFlat = startY * w + startX;
+      const startFlat = sy * w + sx;
       const startIdx = startFlat * 4;
       const sR = data[startIdx], sG = data[startIdx + 1], sB = data[startIdx + 2], sA = data[startIdx + 3];
       const PAINT_TOL = 32;
@@ -1186,12 +1219,10 @@ function PaintPage() {
         );
       };
 
-      // If the user clicked exactly on a line, abort.
-      if (isLine(startFlat)) return;
       // If clicking on the same fill color, skip.
       if (sR === fill[0] && sG === fill[1] && sB === fill[2] && sA === fill[3]) return;
 
-      const stack: number[] = [startX, startY];
+      const stack: number[] = [sx, sy];
       const visited = new Uint8Array(w * h);
 
       // Phase 1: BFS region — only across pixels matching the start color AND not on a line.
@@ -1228,10 +1259,10 @@ function PaintPage() {
           ];
           for (const nf of neighbors) {
             if (nf < 0 || region[nf]) continue;
-            // Don't paint over the line core itself. Uses the same closed
-            // mask as Phase 1 so the halo-removal pass cannot cross or
-            // overwrite imported image borders.
-            if (isLine(nf)) continue;
+            // Block only on the raw stroke core: the closed mask includes
+            // invisible sealed-gap pixels, and painting 2px under those
+            // kills the white halo without ever covering a visible line.
+            if (isCoreLine(nf)) continue;
             region[nf] = 1;
             next.push(nf);
           }
