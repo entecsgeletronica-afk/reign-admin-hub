@@ -767,7 +767,15 @@ function PaintPage() {
    * lineart image's alpha by drawing it once into a hidden buffer.
    */
   const lineartBufferRef = React.useRef<HTMLCanvasElement | null>(null);
-  const lineartMaskRef = React.useRef<{ width: number; height: number; data: Uint8Array } | null>(null);
+  const lineartMaskRef = React.useRef<{
+    width: number;
+    height: number;
+    /** Closed mask (line core + sealed micro-gaps) — walls for the flood BFS. */
+    data: Uint8Array;
+    /** Raw line-core pixels only — used by the halo-removal pass so paint can
+     *  slip under sealed gaps but never overwrite a visible stroke. */
+    base: Uint8Array;
+  } | null>(null);
 
   /**
    * Unified lineart pixel detector — single source of truth for "is this a
@@ -798,7 +806,12 @@ function PaintPage() {
     // Colored/dark imported strokes (blue-gray, brown, etc.) can have a
     // deceptively high average luminance. If the pixel is opaque and not
     // close to white, keep it as a wall for the bucket fill.
-    if (la >= LINE_ALPHA_STRONG && lum < 215 && chroma > 18) return true;
+    // Threshold 190 (was 215): several imported pages ship with baked-in
+    // pastel/skin shading (peach faces, watermark blobs). Their anti-aliased
+    // edges sit around lum 195-215 with chroma > 18 and were being flagged
+    // as walls, carving faces/hands into phantom fragments so the bucket
+    // painted "the wrong area". Real colored strokes are much darker.
+    if (la >= LINE_ALPHA_STRONG && lum < 190 && chroma > 18) return true;
     return false;
   }
 
