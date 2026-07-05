@@ -855,42 +855,67 @@ function PaintPage() {
       if (isLineartPixel(lineart, i * 4)) base[i] = 1;
     }
 
-    // Close tiny gaps created by JPEG compression / anti-aliasing / imported
-    // transparent PNGs. This gives Tinta a continuous wall without visibly
-    // changing the artwork because it only affects the invisible fill mask.
-    // Bumped from 2 → 3: several imported line-arts (Noé, Jonas, etc.) have
-    // 2-3px breaks between adjacent regions (braço/céu, mão/fundo). With
-    // radius=2 the bucket escapes through those gaps and paints the wrong
-    // area. Radius=3 is still invisible (mask only) but reliably closes
-    // them without visibly shrinking the fillable area.
-    const radius = 3;
-    for (let y = 0; y < h; y++) {
-      for (let x = 0; x < w; x++) {
-        const flat = y * w + x;
-        if (base[flat]) {
-          mask[flat] = 1;
-          continue;
-        }
-        let nearLine = false;
-        for (let dy = -radius; dy <= radius && !nearLine; dy++) {
-          const ny = y + dy;
-          if (ny < 0 || ny >= h) continue;
-          for (let dx = -radius; dx <= radius; dx++) {
-            const nx = x + dx;
-            if (nx < 0 || nx >= w) continue;
-            if (base[ny * w + nx]) {
-              nearLine = true;
-              break;
-            }
-          }
-        }
-        if (nearLine) mask[flat] = 1;
-      }
-    }
+    // Seal tiny breaks in the strokes (JPEG compression / anti-aliasing /
+    // imported PNGs) with a morphological CLOSING (dilate → erode) instead of
+    // the previous dilate-only pass. Dilation alone fattened every stroke by
+    // `radius` px, which blocked 30-40% of the page: taps within 3px of any
+    // line silently did nothing and thin regions (fingers, small face areas)
+    // were sealed shut and never filled. Closing bridges real gaps between
+    // stroke ends but restores the original line thickness everywhere else,
+    // so narrow regions stay fillable.
+    // The radius scales with canvas resolution — gaps shrink proportionally
+    // when the page renders smaller (phone/tablet), so a fixed radius over-
+    // seals small canvases.
+    const radius = Math.max(2, Math.min(4, Math.round(w / 280)));
+    const dilated = dilateBinary(base, w, h, radius);
+    // Erosion = complement of dilation of the complement.
+    const inv = new Uint8Array(w * h);
+    for (let i = 0; i < inv.length; i++) inv[i] = dilated[i] ? 0 : 1;
+    const invDilated = dilateBinary(inv, w, h, radius);
+    for (let i = 0; i < mask.length; i++) mask[i] = invDilated[i] ? 0 : 1;
+    // Closing is a superset of the original set in theory; keep the union as
+    // a cheap safety net against border effects.
+    for (let i = 0; i < mask.length; i++) if (base[i]) mask[i] = 1;
 
-    const next = { width: w, height: h, data: mask };
+    const next = { width: w, height: h, data: mask, base };
     lineartMaskRef.current = next;
     return next;
+  }
+
+  /** Separable binary dilation with a square structuring element. */
+  function dilateBinary(src: Uint8Array, w: number, h: number, radius: number): Uint8Array {
+    const tmp = new Uint8Array(w * h);
+    const out = new Uint8Array(w * h);
+    for (let y = 0; y < h; y++) {
+      const row = y * w;
+      for (let x = 0; x < w; x++) {
+        let v = 0;
+        const lo = Math.max(0, x - radius);
+        const hi = Math.min(w - 1, x + radius);
+        for (let nx = lo; nx <= hi; nx++) {
+          if (src[row + nx]) {
+            v = 1;
+            break;
+          }
+        }
+        tmp[row + x] = v;
+      }
+    }
+    for (let x = 0; x < w; x++) {
+      for (let y = 0; y < h; y++) {
+        let v = 0;
+        const lo = Math.max(0, y - radius);
+        const hi = Math.min(h - 1, y + radius);
+        for (let ny = lo; ny <= hi; ny++) {
+          if (tmp[ny * w + x]) {
+            v = 1;
+            break;
+          }
+        }
+        out[y * w + x] = v;
+      }
+    }
+    return out;
   }
 
   /**
