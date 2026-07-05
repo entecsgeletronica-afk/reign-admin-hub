@@ -1127,8 +1127,19 @@ function PaintPage() {
       const sR = data[startIdx], sG = data[startIdx + 1], sB = data[startIdx + 2], sA = data[startIdx + 3];
       const PAINT_TOL = 32;
 
+      // "Empty" = mostly-transparent paint pixel. A blank canvas region and
+      // a region that only has faint anti-aliased halo from a previous fill
+      // both count as empty and belong to the same flood group. Without
+      // this, clicking on a fresh white spot inside a hand that has a tiny
+      // painted halo nearby would stop mid-way (alpha mismatch beats the
+      // RGB tolerance) and leave big unfilled patches. Threshold 24 is
+      // below LINE_ALPHA_SOFT so line pixels are still excluded by isLine.
+      const EMPTY_ALPHA = 24;
+      const startIsEmpty = sA <= EMPTY_ALPHA;
+
       const matchesStart = (idx: number): boolean => {
         const r = data[idx], g = data[idx + 1], b = data[idx + 2], a = data[idx + 3];
+        if (startIsEmpty) return a <= EMPTY_ALPHA;
         return (
           Math.abs(r - sR) <= PAINT_TOL &&
           Math.abs(g - sG) <= PAINT_TOL &&
