@@ -838,7 +838,12 @@ function PaintPage() {
     return bctx.getImageData(0, 0, buf.width, buf.height);
   }
 
-  function ensureLineartMask(): { width: number; height: number; data: Uint8Array } | null {
+  function ensureLineartMask(): {
+    width: number;
+    height: number;
+    data: Uint8Array;
+    base: Uint8Array;
+  } | null {
     const canvas = canvasRef.current;
     if (!canvas) return null;
     const cached = lineartMaskRef.current;
