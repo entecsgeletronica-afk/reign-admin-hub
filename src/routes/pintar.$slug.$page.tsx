@@ -845,7 +845,12 @@ function PaintPage() {
     // Close tiny gaps created by JPEG compression / anti-aliasing / imported
     // transparent PNGs. This gives Tinta a continuous wall without visibly
     // changing the artwork because it only affects the invisible fill mask.
-    const radius = 2;
+    // Bumped from 2 → 3: several imported line-arts (Noé, Jonas, etc.) have
+    // 2-3px breaks between adjacent regions (braço/céu, mão/fundo). With
+    // radius=2 the bucket escapes through those gaps and paints the wrong
+    // area. Radius=3 is still invisible (mask only) but reliably closes
+    // them without visibly shrinking the fillable area.
+    const radius = 3;
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
         const flat = y * w + x;
@@ -1122,8 +1127,19 @@ function PaintPage() {
       const sR = data[startIdx], sG = data[startIdx + 1], sB = data[startIdx + 2], sA = data[startIdx + 3];
       const PAINT_TOL = 32;
 
+      // "Empty" = mostly-transparent paint pixel. A blank canvas region and
+      // a region that only has faint anti-aliased halo from a previous fill
+      // both count as empty and belong to the same flood group. Without
+      // this, clicking on a fresh white spot inside a hand that has a tiny
+      // painted halo nearby would stop mid-way (alpha mismatch beats the
+      // RGB tolerance) and leave big unfilled patches. Threshold 24 is
+      // below LINE_ALPHA_SOFT so line pixels are still excluded by isLine.
+      const EMPTY_ALPHA = 24;
+      const startIsEmpty = sA <= EMPTY_ALPHA;
+
       const matchesStart = (idx: number): boolean => {
         const r = data[idx], g = data[idx + 1], b = data[idx + 2], a = data[idx + 3];
+        if (startIsEmpty) return a <= EMPTY_ALPHA;
         return (
           Math.abs(r - sR) <= PAINT_TOL &&
           Math.abs(g - sG) <= PAINT_TOL &&
