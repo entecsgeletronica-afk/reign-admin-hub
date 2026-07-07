@@ -1362,6 +1362,7 @@ function PaintPage() {
 
       const stack: number[] = [sx, sy];
       const visited = new Uint8Array(w * h);
+      let regionSize = 0;
 
       // Phase 1: BFS region — only across pixels matching the start color AND not on a line.
       const region = new Uint8Array(w * h);
@@ -1376,7 +1377,20 @@ function PaintPage() {
         if (isLine(flat)) continue;
         if (!matchesStart(idx)) continue;
         region[flat] = 1;
+        regionSize++;
         stack.push(x + 1, y, x - 1, y, x, y + 1, x, y - 1);
+      }
+
+      // If a supposedly local tap expands into a huge portion of the page,
+      // the source art still has an unsealed contour. Do not color the wrong
+      // place; close the mask once more with a stronger radius and retry from
+      // the same click. This turns broken imported drawings into paint-bucket
+      // safe islands without letting color bleed into sky/ground/nearby limbs.
+      const maxLocalRegion = Math.round(w * h * 0.34);
+      if (regionSize > maxLocalRegion && lineMask) {
+        lineMask.data = closeMask(lineMask.data, w, h, Math.max(2, Math.min(5, Math.round(w / 300))));
+        floodFill(sx, sy, fillHex);
+        return;
       }
 
       // Phase 2: dilate the region by 2px so we paint *under* the anti-aliased edge of
