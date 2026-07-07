@@ -753,7 +753,7 @@ function PaintPage() {
     if (currentPage) {
       canvasPageRef.current = { pageIndex: pageNumber, pageId: currentPage.id };
     }
-    const snapshotToRestore = existingSnapshot || restoreDataUrl;
+    const snapshotToRestore = canvasDirtyRef.current && existingSnapshot ? existingSnapshot : restoreDataUrl;
     if (snapshotToRestore) {
       requestAnimationFrame(() => restoreFromDataUrl(snapshotToRestore));
     }
