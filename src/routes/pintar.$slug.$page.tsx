@@ -2547,9 +2547,9 @@ function PaintPage() {
             className="relative inline-block bg-white rounded-2xl shadow-2xl overflow-hidden"
             style={{ transform: `scale(${zoom})`, transformOrigin: "center center" }}
           >
-            {lineArt ? (
+            {displayLineArt ? (
               <img
-                src={lineArt}
+                src={displayLineArt}
                 alt={humanTitle(currentPage.title, `Página ${pageNumber}`)}
                 /* CRITICAL: crossOrigin="anonymous" lets us call
                    ctx.getImageData() on a buffer that has drawImage()'d
@@ -2568,7 +2568,7 @@ function PaintPage() {
                   logEditorError("asset-load", "lineart image failed to load", {
                     slug,
                     page: pageNumber,
-                    url: lineArt,
+                    url: displayLineArt,
                     extra: { op: "main-lineart" },
                   })
                 }
