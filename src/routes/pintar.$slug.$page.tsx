@@ -1276,7 +1276,7 @@ function PaintPage() {
     }
   }
 
-  function floodFill(startX: number, startY: number, fillHex: string) {
+  function floodFill(startX: number, startY: number, fillHex: string, retriedWithStrongerSeal = false) {
     try {
       const canvas = canvasRef.current;
       if (!canvas) return;
@@ -1387,9 +1387,9 @@ function PaintPage() {
       // the same click. This turns broken imported drawings into paint-bucket
       // safe islands without letting color bleed into sky/ground/nearby limbs.
       const maxLocalRegion = Math.round(w * h * 0.34);
-      if (regionSize > maxLocalRegion && lineMask) {
+      if (regionSize > maxLocalRegion && lineMask && !retriedWithStrongerSeal) {
         lineMask.data = closeMask(lineMask.data, w, h, Math.max(2, Math.min(5, Math.round(w / 300))));
-        floodFill(sx, sy, fillHex);
+        floodFill(sx, sy, fillHex, true);
         return;
       }
 
