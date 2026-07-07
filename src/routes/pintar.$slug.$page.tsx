@@ -569,7 +569,9 @@ function PaintPage() {
     currentPage?.image_lineart_url ||
     currentPage?.image_preview_url ||
     null;
+  const [bucketLineArt, setBucketLineArt] = React.useState<string | null>(null);
   const [generatedSuggestionUrl, setGeneratedSuggestionUrl] = React.useState<string | null>(null);
+  const displayLineArt = bucketLineArt || lineArt;
 
   // Reference image used internally by the Magic Paint algorithm to sample
   // a coherent color palette. Prefers an admin-provided colored sample and
@@ -583,6 +585,7 @@ function PaintPage() {
     completionShownRef.current = false;
     setShowCompletionModal(false);
     setProgressPercent(0);
+    setBucketLineArt(null);
     // Drop the live snapshot so the new page falls back to its own DB
     // overlay (paintByPage) until the kid paints something here.
     setLivePaintSnapshot(null);
@@ -608,20 +611,38 @@ function PaintPage() {
     }
   }, [pageNumber, slug]);
 
+  React.useEffect(() => {
+    let cancelled = false;
+    setBucketLineArt(null);
+    lineartBufferRef.current = null;
+    lineartMaskRef.current = null;
+
+    if (!lineArt) return;
+
+    prepareLineArtForBucket(lineArt).then((url) => {
+      if (cancelled) return;
+      if (url) setBucketLineArt(url);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [lineArt]);
+
   // Cache the generated color reference per page in localStorage so we don't
   // re-extract the palette every time the user navigates back to the same page.
   // Key includes both the page id and the lineart URL — if the admin replaces
   // the artwork, the URL changes and the cache invalidates automatically.
   const suggestionCacheKey = React.useMemo(() => {
-    if (!currentPage?.id || !lineArt) return null;
-    return `rdc:suggestion:v2:${currentPage.id}:${lineArt}`;
-  }, [currentPage?.id, lineArt]);
+    if (!currentPage?.id || !displayLineArt) return null;
+    return `rdc:suggestion:v2:${currentPage.id}:${displayLineArt}`;
+  }, [currentPage?.id, displayLineArt]);
 
   React.useEffect(() => {
     let cancelled = false;
     setGeneratedSuggestionUrl(null);
 
-    if (currentPage?.image_colored_sample_url || !lineArt) {
+    if (currentPage?.image_colored_sample_url || !displayLineArt) {
       return;
     }
 
@@ -636,7 +657,7 @@ function PaintPage() {
       }
     }
 
-    generateSuggestionFromLineart(lineArt).then((url) => {
+    generateSuggestionFromLineart(displayLineArt).then((url) => {
       if (cancelled) return;
       setGeneratedSuggestionUrl(url);
       // Persist for next visit. Data URLs can be large (~50-200KB);
@@ -650,7 +671,7 @@ function PaintPage() {
     return () => {
       cancelled = true;
     };
-  }, [currentPage?.id, currentPage?.image_colored_sample_url, lineArt, suggestionCacheKey]);
+  }, [currentPage?.id, currentPage?.image_colored_sample_url, displayLineArt, suggestionCacheKey]);
 
 
   const restoreDataUrl = React.useMemo<string | null>(() => {
