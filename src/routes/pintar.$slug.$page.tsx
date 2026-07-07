@@ -742,14 +742,20 @@ function PaintPage() {
   function handleImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
     const img = e.currentTarget;
     const rect = img.getBoundingClientRect();
+    const existingCanvas = canvasRef.current;
+    const existingSnapshot =
+      canvasReady && existingCanvas && existingCanvas.width > 0 && existingCanvas.height > 0
+        ? existingCanvas.toDataURL("image/png")
+        : null;
     setupCanvas(rect.width, rect.height);
     // Pin the canvas identity to the page that just finished loading.
     // Until this assignment, autosave is blocked (canvasPageRef === null).
     if (currentPage) {
       canvasPageRef.current = { pageIndex: pageNumber, pageId: currentPage.id };
     }
-    if (restoreDataUrl) {
-      requestAnimationFrame(() => restoreFromDataUrl(restoreDataUrl));
+    const snapshotToRestore = existingSnapshot || restoreDataUrl;
+    if (snapshotToRestore) {
+      requestAnimationFrame(() => restoreFromDataUrl(snapshotToRestore));
     }
   }
 
