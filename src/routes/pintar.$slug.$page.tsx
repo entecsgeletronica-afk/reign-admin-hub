@@ -175,6 +175,112 @@ const SWATCH_FOCUS_CLASS =
   // splitting the class itself.
   "focus-visible:[box-shadow:0_0_0_2px_var(--swatch-focus-inner),0_0_0_4px_var(--swatch-focus-gap),0_0_0_6px_var(--swatch-focus-outer)]";
 
+function dilateMask(src: Uint8Array, w: number, h: number, radius: number): Uint8Array {
+  const tmp = new Uint8Array(w * h);
+  const out = new Uint8Array(w * h);
+  for (let y = 0; y < h; y++) {
+    const row = y * w;
+    for (let x = 0; x < w; x++) {
+      let v = 0;
+      for (let nx = Math.max(0, x - radius); nx <= Math.min(w - 1, x + radius); nx++) {
+        if (src[row + nx]) {
+          v = 1;
+          break;
+        }
+      }
+      tmp[row + x] = v;
+    }
+  }
+  for (let x = 0; x < w; x++) {
+    for (let y = 0; y < h; y++) {
+      let v = 0;
+      for (let ny = Math.max(0, y - radius); ny <= Math.min(h - 1, y + radius); ny++) {
+        if (tmp[ny * w + x]) {
+          v = 1;
+          break;
+        }
+      }
+      out[y * w + x] = v;
+    }
+  }
+  return out;
+}
+
+function closeMask(src: Uint8Array, w: number, h: number, radius: number): Uint8Array {
+  const dilated = dilateMask(src, w, h, radius);
+  const inv = new Uint8Array(w * h);
+  for (let i = 0; i < inv.length; i++) inv[i] = dilated[i] ? 0 : 1;
+  const invDilated = dilateMask(inv, w, h, radius);
+  const out = new Uint8Array(w * h);
+  for (let i = 0; i < out.length; i++) out[i] = invDilated[i] ? 0 : 1;
+  for (let i = 0; i < out.length; i++) if (src[i]) out[i] = 1;
+  return out;
+}
+
+async function prepareLineArtForBucket(sourceUrl: string): Promise<string | null> {
+  if (typeof document === "undefined") return null;
+
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      try {
+        const w = img.naturalWidth || img.width;
+        const h = img.naturalHeight || img.height;
+        if (!w || !h) return resolve(null);
+
+        const off = document.createElement("canvas");
+        off.width = w;
+        off.height = h;
+        const ctx = off.getContext("2d", { willReadFrequently: true });
+        if (!ctx) return resolve(null);
+
+        ctx.clearRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        const image = ctx.getImageData(0, 0, w, h);
+        const data = image.data;
+        const ink = new Uint8Array(w * h);
+
+        for (let i = 0; i < ink.length; i++) {
+          const idx = i * 4;
+          const a = data[idx + 3];
+          if (a < 18) continue;
+          const r = data[idx];
+          const g = data[idx + 1];
+          const b = data[idx + 2];
+          const lum = (r + g + b) / 3;
+          const chroma = Math.max(r, g, b) - Math.min(r, g, b);
+          // Keep black/gray contour pixels and very dark colored strokes, but
+          // drop paper noise, JPEG speckles, and any pale shading/watermark.
+          if (lum < 232 && (lum < 218 || chroma < 42)) ink[i] = 1;
+        }
+
+        const closeRadius = Math.max(1, Math.min(3, Math.round(w / 520)));
+        const strokeRadius = Math.max(1, Math.min(2, Math.round(w / 720)));
+        const sealed = closeMask(ink, w, h, closeRadius);
+        const thick = dilateMask(sealed, w, h, strokeRadius);
+
+        for (let i = 0; i < thick.length; i++) {
+          const idx = i * 4;
+          const isInk = thick[i] === 1;
+          data[idx] = isInk ? 0 : 255;
+          data[idx + 1] = isInk ? 0 : 255;
+          data[idx + 2] = isInk ? 0 : 255;
+          data[idx + 3] = 255;
+        }
+
+        ctx.putImageData(image, 0, 0);
+        resolve(off.toDataURL("image/png"));
+      } catch (err) {
+        logEditorError("render", err, { extra: { op: "prepareLineArtForBucket", sourceUrl } });
+        resolve(null);
+      }
+    };
+    img.onerror = () => resolve(null);
+    img.src = sourceUrl;
+  });
+}
+
 interface CanvasState {
   paintDataUrl: string | null;
 }
@@ -463,7 +569,9 @@ function PaintPage() {
     currentPage?.image_lineart_url ||
     currentPage?.image_preview_url ||
     null;
+  const [bucketLineArt, setBucketLineArt] = React.useState<string | null>(null);
   const [generatedSuggestionUrl, setGeneratedSuggestionUrl] = React.useState<string | null>(null);
+  const displayLineArt = bucketLineArt || lineArt;
 
   // Reference image used internally by the Magic Paint algorithm to sample
   // a coherent color palette. Prefers an admin-provided colored sample and
@@ -477,6 +585,7 @@ function PaintPage() {
     completionShownRef.current = false;
     setShowCompletionModal(false);
     setProgressPercent(0);
+    setBucketLineArt(null);
     // Drop the live snapshot so the new page falls back to its own DB
     // overlay (paintByPage) until the kid paints something here.
     setLivePaintSnapshot(null);
@@ -502,20 +611,38 @@ function PaintPage() {
     }
   }, [pageNumber, slug]);
 
+  React.useEffect(() => {
+    let cancelled = false;
+    setBucketLineArt(null);
+    lineartBufferRef.current = null;
+    lineartMaskRef.current = null;
+
+    if (!lineArt) return;
+
+    prepareLineArtForBucket(lineArt).then((url) => {
+      if (cancelled) return;
+      if (url) setBucketLineArt(url);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [lineArt]);
+
   // Cache the generated color reference per page in localStorage so we don't
   // re-extract the palette every time the user navigates back to the same page.
   // Key includes both the page id and the lineart URL — if the admin replaces
   // the artwork, the URL changes and the cache invalidates automatically.
   const suggestionCacheKey = React.useMemo(() => {
-    if (!currentPage?.id || !lineArt) return null;
-    return `rdc:suggestion:v2:${currentPage.id}:${lineArt}`;
-  }, [currentPage?.id, lineArt]);
+    if (!currentPage?.id || !displayLineArt) return null;
+    return `rdc:suggestion:v2:${currentPage.id}:${lineArt ?? displayLineArt}`;
+  }, [currentPage?.id, displayLineArt, lineArt]);
 
   React.useEffect(() => {
     let cancelled = false;
     setGeneratedSuggestionUrl(null);
 
-    if (currentPage?.image_colored_sample_url || !lineArt) {
+    if (currentPage?.image_colored_sample_url || !displayLineArt) {
       return;
     }
 
@@ -530,7 +657,7 @@ function PaintPage() {
       }
     }
 
-    generateSuggestionFromLineart(lineArt).then((url) => {
+    generateSuggestionFromLineart(displayLineArt).then((url) => {
       if (cancelled) return;
       setGeneratedSuggestionUrl(url);
       // Persist for next visit. Data URLs can be large (~50-200KB);
@@ -544,7 +671,7 @@ function PaintPage() {
     return () => {
       cancelled = true;
     };
-  }, [currentPage?.id, currentPage?.image_colored_sample_url, lineArt, suggestionCacheKey]);
+  }, [currentPage?.id, currentPage?.image_colored_sample_url, displayLineArt, suggestionCacheKey]);
 
 
   const restoreDataUrl = React.useMemo<string | null>(() => {
@@ -615,14 +742,20 @@ function PaintPage() {
   function handleImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
     const img = e.currentTarget;
     const rect = img.getBoundingClientRect();
+    const existingCanvas = canvasRef.current;
+    const existingSnapshot =
+      canvasReady && existingCanvas && existingCanvas.width > 0 && existingCanvas.height > 0
+        ? existingCanvas.toDataURL("image/png")
+        : null;
     setupCanvas(rect.width, rect.height);
     // Pin the canvas identity to the page that just finished loading.
     // Until this assignment, autosave is blocked (canvasPageRef === null).
     if (currentPage) {
       canvasPageRef.current = { pageIndex: pageNumber, pageId: currentPage.id };
     }
-    if (restoreDataUrl) {
-      requestAnimationFrame(() => restoreFromDataUrl(restoreDataUrl));
+    const snapshotToRestore = canvasDirtyRef.current && existingSnapshot ? existingSnapshot : restoreDataUrl;
+    if (snapshotToRestore) {
+      requestAnimationFrame(() => restoreFromDataUrl(snapshotToRestore));
     }
   }
 
@@ -1143,7 +1276,7 @@ function PaintPage() {
     }
   }
 
-  function floodFill(startX: number, startY: number, fillHex: string) {
+  function floodFill(startX: number, startY: number, fillHex: string, retriedWithStrongerSeal = false) {
     try {
       const canvas = canvasRef.current;
       if (!canvas) return;
@@ -1229,6 +1362,7 @@ function PaintPage() {
 
       const stack: number[] = [sx, sy];
       const visited = new Uint8Array(w * h);
+      let regionSize = 0;
 
       // Phase 1: BFS region — only across pixels matching the start color AND not on a line.
       const region = new Uint8Array(w * h);
@@ -1243,7 +1377,20 @@ function PaintPage() {
         if (isLine(flat)) continue;
         if (!matchesStart(idx)) continue;
         region[flat] = 1;
+        regionSize++;
         stack.push(x + 1, y, x - 1, y, x, y + 1, x, y - 1);
+      }
+
+      // If a supposedly local tap expands into a huge portion of the page,
+      // the source art still has an unsealed contour. Do not color the wrong
+      // place; close the mask once more with a stronger radius and retry from
+      // the same click. This turns broken imported drawings into paint-bucket
+      // safe islands without letting color bleed into sky/ground/nearby limbs.
+      const maxLocalRegion = Math.round(w * h * 0.34);
+      if (regionSize > maxLocalRegion && lineMask && !retriedWithStrongerSeal) {
+        lineMask.data = closeMask(lineMask.data, w, h, Math.max(2, Math.min(5, Math.round(w / 300))));
+        floodFill(sx, sy, fillHex, true);
+        return;
       }
 
       // Phase 2: dilate the region by 2px so we paint *under* the anti-aliased edge of
@@ -2420,9 +2567,9 @@ function PaintPage() {
             className="relative inline-block bg-white rounded-2xl shadow-2xl overflow-hidden"
             style={{ transform: `scale(${zoom})`, transformOrigin: "center center" }}
           >
-            {lineArt ? (
+            {displayLineArt ? (
               <img
-                src={lineArt}
+                src={displayLineArt}
                 alt={humanTitle(currentPage.title, `Página ${pageNumber}`)}
                 /* CRITICAL: crossOrigin="anonymous" lets us call
                    ctx.getImageData() on a buffer that has drawImage()'d
@@ -2441,7 +2588,7 @@ function PaintPage() {
                   logEditorError("asset-load", "lineart image failed to load", {
                     slug,
                     page: pageNumber,
-                    url: lineArt,
+                    url: displayLineArt,
                     extra: { op: "main-lineart" },
                   })
                 }
