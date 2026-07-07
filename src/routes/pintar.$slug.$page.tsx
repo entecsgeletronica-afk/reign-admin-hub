@@ -635,8 +635,8 @@ function PaintPage() {
   // the artwork, the URL changes and the cache invalidates automatically.
   const suggestionCacheKey = React.useMemo(() => {
     if (!currentPage?.id || !displayLineArt) return null;
-    return `rdc:suggestion:v2:${currentPage.id}:${displayLineArt}`;
-  }, [currentPage?.id, displayLineArt]);
+    return `rdc:suggestion:v2:${currentPage.id}:${lineArt ?? displayLineArt}`;
+  }, [currentPage?.id, displayLineArt, lineArt]);
 
   React.useEffect(() => {
     let cancelled = false;
